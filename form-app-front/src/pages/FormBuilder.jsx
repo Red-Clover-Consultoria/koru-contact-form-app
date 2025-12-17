@@ -21,17 +21,17 @@ const FormBuilder = () => {
     const [formData, setFormData] = useState({
         title: '',
         app_id: '',
-        fields_config: [], // Array of fields
-        layout_settings: {
-            // Debe ser uno de: 'Inline', 'Floating', 'Popup'
+        fields_config: [], // Array de campos
+            layout_settings: {
+            // Opcion: 'Inline', 'Floating', 'Popup'
             display_type: 'Inline',
-            // Debe ser uno de: 'Bottom-Right', 'Bottom-Left'
+            //Opcion: 'Bottom-Right', 'Bottom-Left'
             position: 'Bottom-Right',
-            // Debe ser uno de: 'Envelope', 'Chat', 'User', 'Question'
+            //Opcion: 'Envelope', 'Chat', 'User', 'Question'
             bubble_icon: 'Envelope',
-            accent_color: '#4F46E5',
-            submit_text: 'Send Message',
-            success_msg: 'Thank you! We will contact you soon.',
+            	accent_color: '#4F46E5',
+            	submit_text: 'Enviar',
+            	success_msg: '¡Gracias! Nos pondremos en contacto pronto.',
             redirect_url: '',
         },
         email_settings: {
@@ -68,7 +68,7 @@ const FormBuilder = () => {
             navigate('/dashboard');
         } catch (error) {
             console.error(error);
-            alert('Failed to save form');
+            alert('Error al guardar el formulario');
         } finally {
             setIsLoading(false);
         }
@@ -79,21 +79,21 @@ const FormBuilder = () => {
             {/* Header */}
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white z-10">
                 <div>
-                    <h1 className="text-xl font-bold text-gray-800">{isEditMode ? 'Edit Form' : 'Create New Form'}</h1>
+                    <h1 className="text-xl font-bold text-gray-800">{isEditMode ? 'Editar formulario' : 'Crear formulario'}</h1>
                 </div>
                 <div className="flex space-x-3">
                     <button
                         onClick={() => navigate('/dashboard')}
                         className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                     >
-                        Cancel
+                        Cancelar
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={isLoading}
-                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow transition-colors disabled:opacity-50"
+                        className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 shadow transition-colors disabled:opacity-50"
                     >
-                        {isLoading ? 'Saving...' : 'Save Form'}
+                        {isLoading ? 'Guardando...' : 'Guardar formulario'}
                     </button>
                 </div>
             </div>
@@ -105,23 +105,23 @@ const FormBuilder = () => {
                     {/* General Info Inputs in Sidebar */}
                     <div className="mb-6 space-y-4">
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase">Form Title</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase">Título del formulario</label>
                             <input
                                 type="text"
                                 value={formData.title}
                                 onChange={e => setFormData({ ...formData, title: e.target.value })}
                                 className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                placeholder="My Contact Form"
+                                placeholder="Mi formulario de contacto"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase">App ID</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase">ID de la app</label>
                             <input
                                 type="text"
                                 value={formData.app_id}
                                 onChange={e => setFormData({ ...formData, app_id: e.target.value })}
                                 className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                placeholder="unique-app-id"
+                                placeholder="id-unico-de-app"
                             />
                         </div>
                     </div>
@@ -132,21 +132,21 @@ const FormBuilder = () => {
                             className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${activeTab === 'fields' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'
                                 }`}
                         >
-                            Fields Config (A)
+                            Configuración de campos (A)
                         </button>
                         <button
                             onClick={() => setActiveTab('layout')}
                             className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${activeTab === 'layout' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'
                                 }`}
                         >
-                            Layout Settings (B)
+                            Configuración de diseño (B)
                         </button>
                         <button
                             onClick={() => setActiveTab('email')}
                             className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${activeTab === 'email' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'
                                 }`}
                         >
-                            Email Settings (C)
+                            Configuración de correo (C)
                         </button>
                     </nav>
                 </div>

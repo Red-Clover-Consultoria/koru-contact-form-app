@@ -21,22 +21,7 @@ const useAuthStore = create((set, get) => ({
             return user; // Return user for redirection logic
         } catch (error) {
             set({
-                error: error.response?.data?.message || 'Login failed',
-                isLoading: false
-            });
-            throw error;
-        }
-    },
-
-    register: async (name, email, password) => {
-        set({ isLoading: true, error: null });
-        try {
-            const data = await authService.register(name, email, password);
-            set({ isLoading: false });
-            return data;
-        } catch (error) {
-            set({
-                error: error.response?.data?.message || 'Registration failed',
+                error: error.response?.data?.message || 'Error al iniciar sesión',
                 isLoading: false
             });
             throw error;
@@ -51,7 +36,7 @@ const useAuthStore = create((set, get) => ({
             return data;
         } catch (error) {
             set({
-                error: error.response?.data?.message || 'Failed to send reset email',
+                error: error.response?.data?.message || 'Error al enviar el correo de restablecimiento',
                 isLoading: false
             });
             throw error;
@@ -66,7 +51,7 @@ const useAuthStore = create((set, get) => ({
             return data;
         } catch (error) {
             set({
-                error: error.response?.data?.message || 'Failed to reset password',
+                error: error.response?.data?.message || 'Error al restablecer la contraseña',
                 isLoading: false
             });
             throw error;

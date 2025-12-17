@@ -43,12 +43,12 @@ const FormWidget = ({ appId, isPreview = false }) => {
         const newErrors = {};
         config.fields_config.forEach(field => {
             if (field.required && !formData[field.id]) {
-                newErrors[field.id] = 'This field is required';
+                newErrors[field.id] = 'Este campo es obligatorio';
             }
             if (field.type === 'email' && formData[field.id]) {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(formData[field.id])) {
-                    newErrors[field.id] = 'Invalid email address';
+                    newErrors[field.id] = 'Dirección de correo inválida';
                 }
             }
         });
@@ -92,8 +92,8 @@ const FormWidget = ({ appId, isPreview = false }) => {
         }
     };
 
-    if (isLoading) return <div>Loading form...</div>;
-    if (!config) return <div>Form not found</div>;
+    if (isLoading) return <div>Cargando formulario...</div>;
+    if (!config) return <div>Formulario no encontrado</div>;
 
     const { layout_settings, fields_config } = config;
     const { display_type, position, accent_color, submit_text, success_msg } = layout_settings;
@@ -151,10 +151,10 @@ const FormWidget = ({ appId, isPreview = false }) => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                             </svg>
                         </div>
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">Success!</h3>
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">¡Éxito!</h3>
                         <div className="mt-2 px-7 py-3">
                             <p className="text-sm text-gray-500">
-                                {success_msg || 'Your message has been sent.'}
+                                {success_msg || 'Tu mensaje ha sido enviado.'}
                             </p>
                         </div>
                         {display_type !== 'inline' && (
@@ -162,7 +162,7 @@ const FormWidget = ({ appId, isPreview = false }) => {
                                 onClick={() => setIsOpen(false)}
                                 className="mt-4 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
                             >
-                                Close
+                                Cerrar
                             </button>
                         )}
                     </div>
@@ -187,7 +187,7 @@ const FormWidget = ({ appId, isPreview = false }) => {
                                         onChange={(e) => handleChange(e, field.id)}
                                         className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 ${errors[field.id] ? 'border-red-500' : 'border-gray-300'}`}
                                     >
-                                        <option value="">Select...</option>
+                                        <option value="">Selecciona...</option>
                                         {field.options && field.options.split(',').map(opt => (
                                             <option key={opt.trim()} value={opt.trim()}>{opt.trim()}</option>
                                         ))}
@@ -211,10 +211,10 @@ const FormWidget = ({ appId, isPreview = false }) => {
                             <button
                                 type="submit"
                                 disabled={status === 'submitting'}
-                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
                                 style={{ backgroundColor: accent_color }}
                             >
-                                {status === 'submitting' ? 'Sending...' : submit_text}
+                                {status === 'submitting' ? 'Enviando...' : (submit_text || 'Enviar')}
                             </button>
                         </div>
                     </form>

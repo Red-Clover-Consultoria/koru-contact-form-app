@@ -5,9 +5,9 @@ const WidgetPreview = () => {
     const { appId } = useParams();
 
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
-            <h1 className="text-xl font-bold mb-8 text-gray-500">Widget Preview: {appId}</h1>
-            <p className="mb-8 text-gray-400">This simulates the widget on a client site.</p>
+        <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
+            <h1 className="text-xl font-bold mb-8 text-gray-900">Previsualización del widget: {appId}</h1>
+            <p className="mb-8 text-gray-700">Esto simula el widget en un sitio cliente.</p>
 
             {/* Render the widget */}
             <FormWidget appId={appId} isPreview={true} />

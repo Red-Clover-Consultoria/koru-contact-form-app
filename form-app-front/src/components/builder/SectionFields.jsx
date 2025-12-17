@@ -43,12 +43,12 @@ const SectionFields = ({ fields, onChange }) => {
         <div className="space-y-6 max-w-4xl">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-lg font-medium text-gray-900">Form Fields</h3>
-                    <p className="text-sm text-gray-500">Add and configure the inputs for your form.</p>
+                        <h3 className="text-lg font-medium text-gray-900">Campos del formulario</h3>
+                        <p className="text-sm text-gray-500">Añade y configura los campos para tu formulario.</p>
                 </div>
                 <button
                     onClick={addField}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 shadow flex items-center"
+                        className="px-4 py-2 bg-primary text-white rounded-md hover:opacity-90 shadow flex items-center"
                 >
                     <span className="mr-2">+</span> Add Field
                 </button>
@@ -57,7 +57,7 @@ const SectionFields = ({ fields, onChange }) => {
             <div className="space-y-4">
                 {fields.length === 0 && (
                     <div className="text-center py-8 bg-gray-50 border border-dashed border-gray-300 rounded-lg">
-                        <p className="text-gray-500">No fields added yet.</p>
+                        <p className="text-gray-500">No hay campos añadidos aún.</p>
                     </div>
                 )}
 
@@ -69,7 +69,7 @@ const SectionFields = ({ fields, onChange }) => {
                                     {field.type}
                                 </span>
                                 <span className="font-semibold text-gray-700">{field.label}</span>
-                                {field.required && <span className="text-red-500 text-xs">*Required</span>}
+                                {field.required && <span className="text-red-500 text-xs">*Obl.</span>}
                             </div>
 
                             <div className="flex items-center space-x-2">
@@ -77,7 +77,7 @@ const SectionFields = ({ fields, onChange }) => {
                                     onClick={() => moveField(index, 'up')}
                                     disabled={index === 0}
                                     className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                                    title="Move Up"
+                                    title="Subir"
                                 >
                                     ↑
                                 </button>
@@ -85,14 +85,14 @@ const SectionFields = ({ fields, onChange }) => {
                                     onClick={() => moveField(index, 'down')}
                                     disabled={index === fields.length - 1}
                                     className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                                    title="Move Down"
+                                    title="Bajar"
                                 >
                                     ↓
                                 </button>
                                 <button
                                     onClick={() => removeField(index)}
                                     className="text-red-500 hover:text-red-700 ml-2"
-                                    title="Delete"
+                                        title="Eliminar"
                                 >
                                     ×
                                 </button>
@@ -102,7 +102,7 @@ const SectionFields = ({ fields, onChange }) => {
                         {/* Editor Row */}
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 bg-gray-50 p-3 rounded-md">
                             <div className="md:col-span-3">
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Label</label>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">Etiqueta</label>
                                 <input
                                     type="text"
                                     value={field.label}
@@ -112,23 +112,23 @@ const SectionFields = ({ fields, onChange }) => {
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Type</label>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">Tipo</label>
                                 <select
                                     value={field.type}
                                     onChange={(e) => updateField(index, { type: e.target.value })}
                                     className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs border px-2 py-1"
                                 >
-                                    <option value="text">Text</option>
-                                    <option value="email">Email</option>
-                                    <option value="textarea">Textarea</option>
-                                    <option value="number">Number</option>
-                                    <option value="select">Select</option>
-                                    <option value="checkbox">Checkbox</option>
+                                    <option value="text">Texto</option>
+                                    <option value="email">Correo</option>
+                                    <option value="textarea">Área de texto</option>
+                                    <option value="number">Número</option>
+                                    <option value="select">Seleccionar</option>
+                                    <option value="checkbox">Casilla</option>
                                 </select>
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-xs font-medium text-gray-500 mb-1">ID (Key)</label>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">ID (Clave)</label>
                                 <input
                                     type="text"
                                     value={field.id} // Not ideal to edit ID if used as key, but helpful for custom keys
@@ -138,7 +138,7 @@ const SectionFields = ({ fields, onChange }) => {
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Width</label>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">Ancho</label>
                                 <select
                                     value={field.width}
                                     onChange={(e) => updateField(index, { width: e.target.value })}
@@ -157,20 +157,20 @@ const SectionFields = ({ fields, onChange }) => {
                                         onChange={(e) => updateField(index, { required: e.target.checked })}
                                         className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                                     />
-                                    <span className="text-xs text-gray-700">Req</span>
+                                    <span className="text-xs text-gray-700">Obl.</span>
                                 </label>
                             </div>
                         </div>
 
                         {field.type === 'select' && (
                             <div className="mt-2">
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Options (comma separated)</label>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">Opciones (separadas por comas)</label>
                                 <input
                                     type="text"
                                     value={field.options}
                                     onChange={(e) => updateField(index, { options: e.target.value })}
                                     className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs border px-2 py-1"
-                                    placeholder="Option 1, Option 2, Option 3"
+                                    placeholder="Opción 1, Opción 2, Opción 3"
                                 />
                             </div>
                         )}

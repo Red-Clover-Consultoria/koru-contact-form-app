@@ -15,21 +15,16 @@ const ForgotPassword = () => {
         setMessage('');
 
         if (!email) {
-            setError('Please enter your email address');
+            setError('Por favor ingresa tu correo electrónico');
             return;
         }
 
         try {
             await forgotPassword(email);
-            setMessage('Password reset email sent. Please check your inbox.');
+            setMessage('Correo de restablecimiento enviado. Revisa tu bandeja de entrada.');
             setEmail('');
         } catch (err) {
-            // Error is handled in store but we catch here to prevent crash
-            // and maybe show generic error if store doesn't set it (though store does set it)
-            // We rely on the local error state too if we want, or just store error.
-            // But the component uses local error for validation.
-            // We'll use the local error state for API errors too for simplicity 
-            // or fetch from store. Let's rely on catch block.
+           
             setError(err.response?.data?.message || 'Failed to send request');
         }
     };
@@ -37,8 +32,8 @@ const ForgotPassword = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
             <div className="w-full max-w-md p-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl">
-                <h2 className="text-3xl font-bold text-center text-white mb-4">Reset Password</h2>
-                <p className="text-center text-white/70 mb-8">Enter your email and we'll send you a link to reset your password.</p>
+                <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">Restablecer contraseña</h2>
+                <p className="text-center text-gray-700 mb-8">Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.</p>
 
                 {message && (
                     <div className="mb-4 p-3 bg-green-500/20 border border-green-500/50 rounded-lg text-green-100 text-sm text-center">
@@ -54,28 +49,28 @@ const ForgotPassword = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-white/80 mb-1">Email Address</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
                         <input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-white placeholder-white/50 transition duration-200"
-                            placeholder="you@example.com"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-gray-900 placeholder-gray-400 transition duration-200"
+                            placeholder="tu@correo.com"
                         />
                     </div>
 
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full py-3 px-4 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-lg shadow-lg transform transition hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-3 px-4 bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-lg shadow-lg transform transition hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {isLoading ? 'Sending...' : 'Send Reset Link'}
+                        {isLoading ? 'Enviando...' : 'Enviar enlace'}
                     </button>
                 </form>
 
                 <div className="mt-8 text-center text-white/70 text-sm">
-                    <Link to="/login" className="text-white font-semibold hover:underline flex items-center justify-center gap-2">
-                        ← Back to Login
+                    <Link to="/login" className="text-primary font-semibold hover:underline flex items-center justify-center gap-2">
+                        ← Volver al inicio de sesión
                     </Link>
                 </div>
             </div>

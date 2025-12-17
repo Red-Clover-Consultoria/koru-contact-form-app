@@ -11,7 +11,7 @@ const Dashboard = () => {
     }, [fetchForms]);
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this form?')) {
+        if (window.confirm('¿Seguro que quieres eliminar este formulario?')) {
             await deleteForm(id);
         }
     };
@@ -19,12 +19,12 @@ const Dashboard = () => {
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">My Forms</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Mis formularios</h1>
                 <Link
                     to="/forms/new"
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition-colors"
+                    className="px-4 py-2 bg-primary text-white rounded-lg shadow hover:opacity-90 transition-colors"
                 >
-                    Create New Form
+                    Crear formulario
                 </Link>
             </div>
 
@@ -44,14 +44,14 @@ const Dashboard = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Title
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Título
                                     </th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        App ID
+                                        ID de la app
                                     </th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status
+                                        Estado
                                     </th>
                                     <th scope="col" className="relative px-6 py-3">
                                         <span className="sr-only">Actions</span>
@@ -70,18 +70,18 @@ const Dashboard = () => {
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${form.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                                                 }`}>
-                                                {form.status || 'Active'}
+                                                {form.status || 'Activo'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
-                                            <Link to={`/forms/${form.id || form._id}`} className="text-indigo-600 hover:text-indigo-900">
-                                                Edit
+                                            <Link to={`/forms/${form.id || form._id}`} className="text-primary hover:underline">
+                                                Editar
                                             </Link>
                                             <button
                                                 onClick={() => handleDelete(form.id || form._id)}
                                                 className="text-red-600 hover:text-red-900"
                                             >
-                                                Delete
+                                                Eliminar
                                             </button>
                                         </td>
                                     </tr>
