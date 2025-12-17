@@ -1,0 +1,180 @@
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import useFormStore from '../stores/useFormStore';
+
+// Sections (Placeholders for now)
+import SectionFields from '../components/builder/SectionFields';
+import SectionLayout from '../components/builder/SectionLayout';
+import SectionEmail from '../components/builder/SectionEmail';
+
+const FormBuilder = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { createForm, updateForm, forms } = useFormStore();
+    const isEditMode = !!id && id !== 'new';
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [activeTab, setActiveTab] = useState('fields');
+
+    // Form Configuration State
+    // IMPORTANTE: estos valores deben coincidir con los enums del backend (CreateFormDto/LayoutSettingsDto/EmailSettingsDto)
+    const [formData, setFormData] = useState({
+        title: '',
+        app_id: '',
+        fields_config: [], // Array of fields
+        layout_settings: {
+            // Debe ser uno de: 'Inline', 'Floating', 'Popup'
+            display_type: 'Inline',
+            // Debe ser uno de: 'Bottom-Right', 'Bottom-Left'
+            position: 'Bottom-Right',
+            // Debe ser uno de: 'Envelope', 'Chat', 'User', 'Question'
+            bubble_icon: 'Envelope',
+            accent_color: '#4F46E5',
+            submit_text: 'Send Message',
+            success_msg: 'Thank you! We will contact you soon.',
+            redirect_url: '',
+        },
+        email_settings: {
+            admin_email: '',
+            subject_line: 'New Contact: {{Name}}',
+            autoresponder: false,
+        },
+    });
+
+    useEffect(() => {
+        if (isEditMode) {
+            // Find form in store or fetch (omitted fetch detail for brevity, assuming store has it or we fetch)
+            const form = forms.find(f => (f.id || f._id) === id);
+            if (form) {
+                setFormData({
+                    title: form.title || '',
+                    app_id: form.app_id || '',
+                    fields_config: form.fields_config || [],
+                    layout_settings: { ...formData.layout_settings, ...form.layout_settings },
+                    email_settings: { ...formData.email_settings, ...form.email_settings },
+                });
+            }
+        }
+    }, [id, forms, isEditMode]);
+
+    const handleSave = async () => {
+        setIsLoading(true);
+        try {
+            if (isEditMode) {
+                await updateForm(id, formData);
+            } else {
+                await createForm(formData);
+            }
+            navigate('/dashboard');
+        } catch (error) {
+            console.error(error);
+            alert('Failed to save form');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="bg-white rounded-lg shadow min-h-screen flex flex-col">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white z-10">
+                <div>
+                    <h1 className="text-xl font-bold text-gray-800">{isEditMode ? 'Edit Form' : 'Create New Form'}</h1>
+                </div>
+                <div className="flex space-x-3">
+                    <button
+                        onClick={() => navigate('/dashboard')}
+                        className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        disabled={isLoading}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow transition-colors disabled:opacity-50"
+                    >
+                        {isLoading ? 'Saving...' : 'Save Form'}
+                    </button>
+                </div>
+            </div>
+
+            {/* Tabs & Main Content */}
+            <div className="flex flex-1 overflow-hidden">
+                {/* Sidebar / Tabs */}
+                <div className="w-64 bg-gray-50 border-r border-gray-200 p-4">
+                    {/* General Info Inputs in Sidebar */}
+                    <div className="mb-6 space-y-4">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase">Form Title</label>
+                            <input
+                                type="text"
+                                value={formData.title}
+                                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                placeholder="My Contact Form"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase">App ID</label>
+                            <input
+                                type="text"
+                                value={formData.app_id}
+                                onChange={e => setFormData({ ...formData, app_id: e.target.value })}
+                                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                placeholder="unique-app-id"
+                            />
+                        </div>
+                    </div>
+
+                    <nav className="space-y-1">
+                        <button
+                            onClick={() => setActiveTab('fields')}
+                            className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${activeTab === 'fields' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                        >
+                            Fields Config (A)
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('layout')}
+                            className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${activeTab === 'layout' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                        >
+                            Layout Settings (B)
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('email')}
+                            className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${activeTab === 'email' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                        >
+                            Email Settings (C)
+                        </button>
+                    </nav>
+                </div>
+
+                {/* Content Area */}
+                <div className="flex-1 p-8 overflow-y-auto">
+                    {activeTab === 'fields' && (
+                        <SectionFields
+                            fields={formData.fields_config}
+                            onChange={newFields => setFormData({ ...formData, fields_config: newFields })}
+                        />
+                    )}
+                    {activeTab === 'layout' && (
+                        <SectionLayout
+                            settings={formData.layout_settings}
+                            onChange={newSettings => setFormData({ ...formData, layout_settings: newSettings })}
+                        />
+                    )}
+                    {activeTab === 'email' && (
+                        <SectionEmail
+                            settings={formData.email_settings}
+                            onChange={newSettings => setFormData({ ...formData, email_settings: newSettings })}
+                        />
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default FormBuilder;

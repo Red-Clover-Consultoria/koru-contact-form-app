@@ -1,0 +1,15 @@
+{
+    "app_id": "test-form-001",
+    "website_id": "example.com",
+    "data": {
+        "Nombre Completo": "Karen User (Red Clover)",
+        "Correo Electrónico": "ksimari@redclover.com.ar",
+        "Mensaje": "Hola, soy Karen desde Red Clover llenando el formulario de simarikaren."
+    },
+    "metadata": {
+        "ip_address": "192.168.1.100",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "url": "http://example.com/contacto",
+        "_trap": ""
+    }
+}

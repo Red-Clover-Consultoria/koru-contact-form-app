@@ -1,0 +1,17 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+test-payload.json
+test-submission.ps1
+README.md
+SENDGRID_SETUP.md
+api_endpoints.md
+src/debug-latest.ts
+src/check-config.ts
+src/check-email-details.ts
+src/check-submission.ts
+src/enable-autoresponder.ts
+src/test-report.ts
+src/update-form.ts
