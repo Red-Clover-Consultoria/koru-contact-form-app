@@ -7,12 +7,14 @@ import { Form } from './schemas/form.schema';
 import { CreateFormDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
 import { User } from '../auth/schemas/user.schema';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class FormsService {
     constructor(
         @InjectModel(Form.name) private formModel: Model<Form>,
         @InjectModel(User.name) private userModel: Model<User>,
+        private jwtService: JwtService,
     ) { }
 
     // 1. CREATE: Crear un nuevo formulario
@@ -45,6 +47,14 @@ export class FormsService {
             effectiveOwnerId = clientUser._id.toString();
         }
 
+        // Generar un token JWT para el formulario
+        // Este token puede ser usado por el frontend para validar el "alta" o visualización.
+        const token = this.jwtService.sign({
+            app_id: createFormDto.app_id,
+            title: createFormDto.title,
+            owner_id: effectiveOwnerId,
+        });
+
         const createdForm = new this.formModel({
             ...createFormDto,
             // Nombre interno del formulario: por ahora usamos el mismo título.
@@ -52,6 +62,7 @@ export class FormsService {
             name: createFormDto.title,
             owner_id: new Types.ObjectId(effectiveOwnerId), // ID del dueño del formulario
             status: 'draft', // Empieza como borrador
+            token, // Guardamos el token generado
         });
 
         return createdForm.save();
@@ -89,8 +100,8 @@ export class FormsService {
     async findConfigByAppId(appId: string): Promise<Form> {
         const form = await this.formModel.findOne({
             app_id: appId,
-            status: 'active'
-        }).select('fields_config layout_settings email_settings').exec();
+            status: { $in: ['active', 'draft'] }
+        }).select('fields_config layout_settings email_settings token').exec();
 
         if (!form) {
             throw new NotFoundException(`Configuración de formulario ${appId} no encontrada o inactiva.`);
@@ -109,6 +120,21 @@ export class FormsService {
             query.owner_id = new Types.ObjectId(ownerId);
         }
 
+        // Obtener el formulario actual para ver si ya tiene token
+        const currentForm = await this.formModel.findOne(query).exec();
+        if (!currentForm) {
+            throw new NotFoundException(`Formulario con ID ${formId} no encontrado o acceso denegado.`);
+        }
+
+        // Si no tiene token, lo generamos
+        if (!currentForm.token) {
+            (updateFormDto as any).token = this.jwtService.sign({
+                app_id: currentForm.app_id,
+                title: currentForm.title,
+                owner_id: currentForm.owner_id.toString(),
+            });
+        }
+
         const updatedForm = await this.formModel.findOneAndUpdate(
             query,
             updateFormDto,
@@ -116,8 +142,9 @@ export class FormsService {
         ).exec();
 
         if (!updatedForm) {
-            throw new NotFoundException(`Formulario con ID ${formId} no encontrado o acceso denegado.`);
+            throw new InternalServerErrorException(`Error al actualizar el formulario con ID ${formId}.`);
         }
+
         return updatedForm;
     }
 

@@ -36,9 +36,9 @@ export class SubmitFormDto {
     @IsString()
     app_id: string; // ID único del formulario (ej: "koru-form-123") [cite: 36]
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
-    website_id: string; // ID del sitio web donde se instaló el widget [cite: 37]
+    website_id?: string; // ID del sitio web donde se instaló el widget [cite: 37]
 
     @IsNotEmpty()
     @IsObject()

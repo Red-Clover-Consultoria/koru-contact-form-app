@@ -4,6 +4,7 @@ import { Form, FormSchema } from './schemas/form.schema';
 import { FormsController } from './forms.controller';
 import { FormsService } from './forms.service';
 import { User, UserSchema } from '../auth/schemas/user.schema';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
     imports: [
@@ -11,6 +12,7 @@ import { User, UserSchema } from '../auth/schemas/user.schema';
             { name: Form.name, schema: FormSchema },
             { name: User.name, schema: UserSchema },
         ]),
+        AuthModule,
     ],
     controllers: [FormsController],
     providers: [FormsService],

@@ -20,7 +20,10 @@ export class SubmissionsService {
         console.log('[SubmissionsService] APP ID:', payload.app_id);
 
         // 1. Verificar la Existencia y Estado del Formulario
-        const formConfig = await this.formModel.findOne({ app_id: payload.app_id, status: 'active' }).exec();
+        const formConfig = await this.formModel.findOne({
+            app_id: payload.app_id,
+            status: { $in: ['active', 'draft'] }
+        }).exec();
 
         if (!formConfig) {
             console.error('[SubmissionsService] ❌ Formulario no encontrado:', payload.app_id);

@@ -107,6 +107,9 @@ export class Form {
     // Campo de seguridad para la Fase 2 o para identificar la aplicación
     @Prop({ type: String, unique: true, required: true })
     app_id: string; // ej: "koru-form-123" [cite: 36]
+
+    @Prop({ type: String, required: false })
+    token?: string; // JWT token para visualización/alta desde el frontend
 }
 
 export const FormSchema = SchemaFactory.createForClass(Form);
