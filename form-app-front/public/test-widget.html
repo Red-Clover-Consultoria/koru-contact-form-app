@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Koru Contact Form Widget</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+        }
+
+        h1 {
+            color: #1a202c;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: #4a5568;
+            line-height: 1.5;
+        }
+
+        .instructions {
+            text-align: left;
+            margin-top: 2rem;
+            background: #edf2f7;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        code {
+            background: #e2e8f0;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- <div class="container">
+        <h1>Koru Contact Form Test Page</h1>
+        <p>Esta es una página de prueba para verificar la integración del widget.</p>
+
+        <div class="instructions">
+            <strong>Instrucciones:</strong>
+            <ol>
+                <li>Asegúrate de que el backend esté corriendo en <code>http://localhost:3001</code>.</li>
+                <li>Reemplaza el <code>data-app-id</code> en el script de abajo con un ID válido de tu base de datos.
+                </li>
+                <li>Este archivo simula la carga asíncrona desde una CDN.</li>
+            </ol>
+        </div>
+    </div> -->
+
+    <!-- Simulación del Snippet que copia el usuario -->
+    <script id="koru-loader" src="./widget-loader-mock.js" data-app-id="koru-g4tfc76l3"
+        data-token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBfaWQiOiJrb3J1LWc0dGZjNzZsMyIsInRpdGxlIjoiSW5saW5lIHBydWViYSIsIm93bmVyX2lkIjoiNjk0MWU2YjI1YmVhMzI3YzI3MzExMWQ5IiwiaWF0IjoxNzY2MDI2NjYyLCJleHAiOjE3NjYyODU4NjJ9.CHFjpg1Wv-tBP_suYBZNyWnvdSeRLwWB4m7MHzToMJo"
+        async></script>
+
+    <!-- Script de Mock del Loader (Solo para esta prueba local) -->
+    <script>
+        // Este bloque simularía lo que hay en widget-loader.js
+        (function () {
+            console.log("Koru Loader: Iniciando...");
+            const script = document.getElementById('koru-loader');
+            const appId = script.getAttribute('data-app-id');
+            const token = script.getAttribute('data-token');
+
+            if (appId === 'REEMPLAZAR_CON_APP_ID_REAL') {
+                console.warn("Koru Loader: Debes configurar un appId real en test-widget.html");
+            }
+
+            // En un entorno real, aquí se inyectaría el bundle de React.
+            // Para este test local, simplemente mostramos un mensaje de éxito
+            // o intentamos cargar el bundle si está disponible localmente.
+
+            const statusDiv = document.createElement('div');
+            statusDiv.style.position = 'fixed';
+            statusDiv.style.bottom = '20px';
+            statusDiv.style.right = '20px';
+            statusDiv.style.padding = '10px';
+            statusDiv.style.background = '#ebf8ff';
+            statusDiv.style.border = '1px solid #90cdf4';
+            statusDiv.style.borderRadius = '8px';
+            statusDiv.style.zIndex = '9999';
+            statusDiv.innerHTML = `<strong>Koru Widget Status:</strong><br>App ID: ${appId}<br>Loader cargado correctamente.`;
+            document.body.appendChild(statusDiv);
+        })();
+    </script>
+
+</body>
+
+</html>

@@ -1,9 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useFormStore from '../stores/useFormStore';
+import EmbedCodeModal from '../components/EmbedCodeModal';
 
 const Dashboard = () => {
     const { forms, fetchForms, deleteForm, isLoading, error } = useFormStore();
+    const [selectedForm, setSelectedForm] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -14,6 +17,11 @@ const Dashboard = () => {
         if (window.confirm('¿Seguro que quieres eliminar este formulario?')) {
             await deleteForm(id);
         }
+    };
+
+    const handleShowEmbed = (form) => {
+        setSelectedForm(form);
+        setIsModalOpen(true);
     };
 
     return (
@@ -44,7 +52,7 @@ const Dashboard = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Título
                                     </th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -74,6 +82,12 @@ const Dashboard = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                                            <button
+                                                onClick={() => handleShowEmbed(form)}
+                                                className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-2 py-1 rounded"
+                                            >
+                                                Obtener código
+                                            </button>
                                             <Link to={`/forms/${form.id || form._id}`} className="text-primary hover:underline">
                                                 Editar
                                             </Link>
@@ -96,6 +110,13 @@ const Dashboard = () => {
                     )}
                 </div>
             )}
+
+            <EmbedCodeModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                appId={selectedForm?.app_id}
+                token={selectedForm?.token} // Assumes token is part of form object or fetched via backend logic designed earlier
+            />
         </div>
     );
 };

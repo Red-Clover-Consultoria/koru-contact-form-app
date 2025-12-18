@@ -5,6 +5,9 @@ const useFormStore = create((set, get) => ({
     forms: [],
     isLoading: false,
     error: null,
+    // Public form config state
+    formConfig: null,
+    token: null,
 
     fetchForms: async () => {
         set({ isLoading: true, error: null });
@@ -23,9 +26,8 @@ const useFormStore = create((set, get) => ({
         set({ isLoading: true, error: null });
         try {
             await api.delete(`/forms/${id}`);
-            // Optimistic update
             set(state => ({
-                forms: state.forms.filter(f => f.id !== id),
+                forms: state.forms.filter(f => (f.id || f._id) !== id),
                 isLoading: false
             }));
         } catch (error) {
@@ -33,12 +35,10 @@ const useFormStore = create((set, get) => ({
                 error: error.response?.data?.message || 'Failed to delete form',
                 isLoading: false
             });
-            // Re-fetch to sync if failed
             get().fetchForms();
         }
     },
 
-    // Create/Update actions can also be here or in the component/service
     createForm: async (formData) => {
         const response = await api.post('/forms', formData);
         set(state => ({ forms: [...state.forms, response.data] }));
@@ -48,9 +48,39 @@ const useFormStore = create((set, get) => ({
     updateForm: async (id, formData) => {
         const response = await api.patch(`/forms/${id}`, formData);
         set(state => ({
-            forms: state.forms.map(f => f.id === id ? response.data : f)
+            forms: state.forms.map(f => (f.id || f._id) === id ? response.data : f)
         }));
         return response.data;
+    },
+
+    // Centralized fetchConfig according to guide
+    fetchConfig: async (appId, propToken) => {
+        set({ isLoading: true, error: null });
+        try {
+            const headers = propToken ? { 'X-Koru-Token': propToken } : {};
+            // Volvemos a la versión funcional: Sin prefijo /api para la configuración pública
+            const response = await api.get(`/forms/config/${appId}`, { headers });
+
+            const { token, ...config } = response.data;
+
+            if (!token && !propToken) {
+                console.error("Formulario no autorizado: Token no recibido");
+                set({ isLoading: false });
+                return null;
+            }
+
+            const activeToken = token || propToken;
+            set({ formConfig: config, token: activeToken, isLoading: false });
+
+            return { config, token: activeToken };
+        } catch (error) {
+            console.error("fetchConfig Error:", error.response?.data || error.message);
+            set({
+                error: error.response?.data?.message || error.message || 'Error al cargar configuración',
+                isLoading: false
+            });
+            throw error;
+        }
     }
 }));
 

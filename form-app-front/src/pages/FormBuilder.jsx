@@ -22,16 +22,16 @@ const FormBuilder = () => {
         title: '',
         app_id: '',
         fields_config: [], // Array de campos
-            layout_settings: {
+        layout_settings: {
             // Opcion: 'Inline', 'Floating', 'Popup'
             display_type: 'Inline',
             //Opcion: 'Bottom-Right', 'Bottom-Left'
             position: 'Bottom-Right',
             //Opcion: 'Envelope', 'Chat', 'User', 'Question'
             bubble_icon: 'Envelope',
-            	accent_color: '#4F46E5',
-            	submit_text: 'Enviar',
-            	success_msg: '¡Gracias! Nos pondremos en contacto pronto.',
+            accent_color: '#4F46E5',
+            submit_text: 'Enviar',
+            success_msg: '¡Gracias! Nos pondremos en contacto pronto.',
             redirect_url: '',
         },
         email_settings: {
@@ -43,7 +43,7 @@ const FormBuilder = () => {
 
     useEffect(() => {
         if (isEditMode) {
-            // Find form in store or fetch (omitted fetch detail for brevity, assuming store has it or we fetch)
+            // Find form in store or fetch
             const form = forms.find(f => (f.id || f._id) === id);
             if (form) {
                 setFormData({
@@ -53,6 +53,12 @@ const FormBuilder = () => {
                     layout_settings: { ...formData.layout_settings, ...form.layout_settings },
                     email_settings: { ...formData.email_settings, ...form.email_settings },
                 });
+            }
+        } else {
+            // Autogenerar app_id para nuevos formularios
+            if (!formData.app_id) {
+                const randomId = `koru-${Math.random().toString(36).substr(2, 9)}`;
+                setFormData(prev => ({ ...prev, app_id: randomId }));
             }
         }
     }, [id, forms, isEditMode]);
@@ -79,7 +85,7 @@ const FormBuilder = () => {
             {/* Header */}
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white z-10">
                 <div>
-                    <h1 className="text-xl font-bold text-gray-800">{isEditMode ? 'Editar formulario' : 'Crear formulario'}</h1>
+                    <h1 className="text-xl font-bold text-gray-800">{isEditMode ? `Editar: ${formData.title}` : 'Crear nuevo formulario'}</h1>
                 </div>
                 <div className="flex space-x-3">
                     <button
@@ -105,24 +111,29 @@ const FormBuilder = () => {
                     {/* General Info Inputs in Sidebar */}
                     <div className="mb-6 space-y-4">
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase">Título del formulario</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase italic text-indigo-600">Título del formulario</label>
                             <input
                                 type="text"
                                 value={formData.title}
                                 onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                placeholder="Mi formulario de contacto"
+                                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-primary outline-none"
+                                placeholder="Ej: Contacto Ventas"
+                                required
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase">ID de la app</label>
-                            <input
-                                type="text"
-                                value={formData.app_id}
-                                onChange={e => setFormData({ ...formData, app_id: e.target.value })}
-                                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                placeholder="id-unico-de-app"
-                            />
+                            <label className="block text-xs font-bold text-gray-500 uppercase">ID de la app (Autogenerado)</label>
+                            <div className="mt-1 relative">
+                                <input
+                                    type="text"
+                                    value={formData.app_id}
+                                    readOnly
+                                    className="w-full px-3 py-2 border border-gray-200 bg-gray-100 rounded-md text-sm text-gray-500 cursor-not-allowed"
+                                />
+                                <span className="absolute right-2 top-2 text-gray-400">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                </span>
+                            </div>
                         </div>
                     </div>
 

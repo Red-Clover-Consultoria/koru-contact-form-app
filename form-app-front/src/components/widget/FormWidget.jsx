@@ -1,43 +1,49 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import useFormStore from '../../stores/useFormStore';
 
-const FormWidget = ({ appId, isPreview = false }) => {
+const FormWidget = ({ appId, token, isPreview = false }) => {
+    const { fetchConfig } = useFormStore();
     const [config, setConfig] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isOpen, setIsOpen] = useState(false); // For popup/floating
     const [formData, setFormData] = useState({});
     const [errors, setErrors] = useState({});
     const [status, setStatus] = useState('idle'); // idle, submitting, success, error
+    const [activeToken, setActiveToken] = useState(token); // Local state for the token
 
     useEffect(() => {
-        const fetchConfig = async () => {
+        const load = async () => {
             if (!appId) return;
             try {
-                // If preview, we might pass config directly or fetch draft. 
-                // Using endpoint as per spec: GET /forms/config/:appId
-                const response = await api.get(`/forms/config/${appId}`);
-                setConfig(response.data);
+                const result = await fetchConfig(appId, token);
+                const { config: fetchedConfig, token: fetchedToken } = result;
+
+                setConfig(fetchedConfig);
+                setActiveToken(fetchedToken);
 
                 // Initialize form data
                 const initialData = {};
-                response.data.fields_config.forEach(field => {
+                fetchedConfig.fields_config.forEach(field => {
                     initialData[field.id] = '';
                 });
                 setFormData(initialData);
 
                 // Auto-open if inline
-                if (response.data.layout_settings?.display_type === 'inline') {
+                if (fetchedConfig.layout_settings?.display_type === 'inline') {
                     setIsOpen(true);
                 }
             } catch (error) {
-                console.error("Failed to load form config", error);
+                console.error("Koru security error:", error.message || error);
+                setStatus('error');
+                setErrors({ config: error.message || "Error al cargar la configuración" });
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchConfig();
-    }, [appId]);
+        load();
+    }, [appId, token, fetchConfig]);
 
     const validate = () => {
         const newErrors = {};
@@ -63,24 +69,32 @@ const FormWidget = ({ appId, isPreview = false }) => {
         setStatus('submitting');
         try {
             const payload = {
-                appId,
+                app_id: appId,
+                website_id: window.location.hostname,  // Use underscore to match backend DTO
                 data: formData,
                 metadata: {
-                    _trap: '', // Anti-spam trap field (should be empty)
-                    submittedAt: new Date().toISOString(),
+                    _trap: '', // Honeypot inside metadata
                 }
             };
 
-            await api.post('/api/forms/submit', payload);
+            console.log("Koru Widget: Intentando envío con token...", activeToken);
+
+            // Use activeToken (synced from either prop or config response)
+            const headers = activeToken ? { 'X-Koru-Token': activeToken } : {};
+            await api.post('/api/forms/submit', payload, { headers });
             setStatus('success');
 
             // Handle success message or redirect
             if (config.layout_settings.redirect_url) {
-                window.location.href = config.layout_settings.redirect_url;
+                setTimeout(() => {
+                    window.location.href = config.layout_settings.redirect_url;
+                }, 2000);
             }
         } catch (error) {
-            console.error(error);
+            console.error("Koru Widget Error:", error.response?.data || error.message);
             setStatus('error');
+            // If the error message is available, we could even show it to the user
+            setErrors({ submit: error.response?.data?.message || 'Error al enviar el formulario. Verifica tu configuración.' });
         }
     };
 
