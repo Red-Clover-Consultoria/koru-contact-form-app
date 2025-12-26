@@ -11,7 +11,7 @@ async function updateForm() {
     const testAppId = 'test-form-001';
 
     const result = await formModel.updateOne(
-        { app_id: testAppId },
+        { form_id: testAppId },
         {
             $set: {
                 'email_settings.admin_email': 'ksimari@redclover.com.ar'
@@ -25,7 +25,7 @@ async function updateForm() {
         console.log('   Documentos modificados:', result.modifiedCount);
 
         // Verificar el cambio
-        const updatedForm = await formModel.findOne({ app_id: testAppId });
+        const updatedForm = await formModel.findOne({ form_id: testAppId });
         if (updatedForm) {
             console.log('   Verificación - Admin email:', updatedForm.email_settings.admin_email);
         }

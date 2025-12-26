@@ -11,7 +11,7 @@ async function checkLatestData() {
     const formModel = app.get<Model<Form>>(getModelToken(Form.name));
 
     console.log("--- CONFIGURACIÓN DEL FORMULARIO ---");
-    const form = await formModel.findOne({ app_id: 'test-form-001' }).exec();
+    const form = await formModel.findOne({ form_id: 'test-form-001' }).exec();
     if (form) {
         console.log("Form ID:", form._id);
         console.log("Owner ID:", form.owner_id);
@@ -22,7 +22,7 @@ async function checkLatestData() {
     }
 
     console.log("\n--- ÚLTIMA SUBMISSION ---");
-    const submission = await submissionModel.findOne({ app_id: 'test-form-001' }).sort({ createdAt: -1 }).exec();
+    const submission = await submissionModel.findOne({ form_id: 'test-form-001' }).sort({ createdAt: -1 }).exec();
 
     if (submission) {
         console.log("ID:", submission._id);

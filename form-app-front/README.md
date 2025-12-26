@@ -34,7 +34,7 @@ Aplicación frontend moderna para la construcción y gestión de formularios int
 
 ### 4. **Widget Embebible**
 - Vista previa pública de formularios
-- Acceso mediante ID de aplicación único
+- Acceso mediante ID de formulario único
 - Sin requerimiento de autenticación
 
 ## 🛠️ Stack Tecnológico
@@ -92,7 +92,7 @@ src/
 /dashboard                 - Dashboard principal (protegido)
 /forms/new                 - Crear nuevo formulario (protegido)
 /forms/:id                 - Editar formulario (protegido)
-/widget/:appId             - Widget público (sin autenticación)
+/widget/:formId             - Widget público (sin autenticación)
 /                          - Redirect a /dashboard
 ```
 
@@ -152,7 +152,7 @@ baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001'
 ```javascript
 {
   title: string,                    // Nombre del formulario
-  app_id: string,                   // ID único de la aplicación
+  formId: string,                   // ID único del formulario
   fields_config: [                  // Configuración de campos
     {
       id: string,

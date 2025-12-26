@@ -1,0 +1,49 @@
+// app/api/auth/login/route.ts (Next.js App Router)
+import { NextResponse } from 'next/server';
+import axios from 'axios';
+
+export async function POST(request: Request) {
+    try {
+        const { email, password } = await request.json();
+
+        // 1. Validar contra Koru Suite API
+        const koruResponse = await axios.post('https://api.korusuite.com/v1/auth/app-login', {
+            username: email,
+            password: password
+        }, {
+            headers: {
+                'X-App-ID': process.env.KORU_APP_ID,
+                'X-App-Secret': process.env.KORU_APP_SECRET
+            }
+        });
+
+        const koruData = koruResponse.data;
+
+        if (!koruData.authenticated) {
+            return NextResponse.json({ message: 'Usuario no activo en Koru' }, { status: 401 });
+        }
+
+        // 2. Manejar el retorno para dar permiso de ingreso
+        // Aquí puedes crear una sesión local o un JWT propio
+        const userSession = {
+            id: koruData.user.id,
+            email: koruData.user.email,
+            role: koruData.user.role,
+            koru_token: koruData.access_token // Opcional: para llamadas futuras a Koru
+        };
+
+        // Retornar éxito y datos de usuario
+        return NextResponse.json({
+            success: true,
+            user: userSession,
+            token: "YOUR_APP_SESSION_TOKEN" // Generado localmente
+        });
+
+    } catch (error: any) {
+        console.error('Koru Login Error:', error.response?.data || error.message);
+        return NextResponse.json(
+            { message: error.response?.data?.message || 'Error en la autenticación con Koru Suite' },
+            { status: error.response?.status || 500 }
+        );
+    }
+}

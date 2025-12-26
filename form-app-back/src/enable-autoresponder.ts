@@ -11,7 +11,7 @@ async function enableAutoresponder() {
     const testAppId = 'test-form-001';
 
     const result = await formModel.updateOne(
-        { app_id: testAppId },
+        { form_id: testAppId },
         {
             $set: {
                 'email_settings.autoresponder': true,

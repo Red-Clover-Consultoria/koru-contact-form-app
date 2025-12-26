@@ -1,0 +1,12 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "name": "Koru Contact Form",
+    "version": "1.0.0",
+    "properties": {
+        "formId": {
+            "type": "string",
+            "title": "ID del Formulario Interno",
+            "description": "ID vinculado desde el App Manager de Koru Contact Form"
+        }
+    }
+}

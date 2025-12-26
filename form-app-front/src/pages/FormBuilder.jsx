@@ -20,7 +20,7 @@ const FormBuilder = () => {
     // IMPORTANTE: estos valores deben coincidir con los enums del backend (CreateFormDto/LayoutSettingsDto/EmailSettingsDto)
     const [formData, setFormData] = useState({
         title: '',
-        app_id: '',
+        formId: '',
         fields_config: [], // Array de campos
         layout_settings: {
             // Opcion: 'Inline', 'Floating', 'Popup'
@@ -48,17 +48,17 @@ const FormBuilder = () => {
             if (form) {
                 setFormData({
                     title: form.title || '',
-                    app_id: form.app_id || '',
+                    formId: form.formId || '',
                     fields_config: form.fields_config || [],
                     layout_settings: { ...formData.layout_settings, ...form.layout_settings },
                     email_settings: { ...formData.email_settings, ...form.email_settings },
                 });
             }
         } else {
-            // Autogenerar app_id para nuevos formularios
-            if (!formData.app_id) {
+            // Autogenerar formId para nuevos formularios
+            if (!formData.formId) {
                 const randomId = `koru-${Math.random().toString(36).substr(2, 9)}`;
-                setFormData(prev => ({ ...prev, app_id: randomId }));
+                setFormData(prev => ({ ...prev, formId: randomId }));
             }
         }
     }, [id, forms, isEditMode]);
@@ -122,11 +122,11 @@ const FormBuilder = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase">ID de la app (Autogenerado)</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase">ID del formulario (Autogenerado)</label>
                             <div className="mt-1 relative">
                                 <input
                                     type="text"
-                                    value={formData.app_id}
+                                    value={formData.formId}
                                     readOnly
                                     className="w-full px-3 py-2 border border-gray-200 bg-gray-100 rounded-md text-sm text-gray-500 cursor-not-allowed"
                                 />

@@ -22,23 +22,23 @@ async function bootstrap() {
 
     if (existingAdmin) {
         console.log('✅ Admin user already exists:', adminEmail);
-        // Asegurar que sea admin
-        if (existingAdmin.role !== 'admin') {
-            existingAdmin.role = 'admin';
-            await existingAdmin.save();
-            console.log('   Rol actualizado a admin');
-        }
+        // Actualizar password para simular Koru Suite localmente
+        const password = 'test1234!';
+        existingAdmin.password = await bcrypt.hash(password, 10);
+        existingAdmin.role = 'admin';
+        await existingAdmin.save();
+        console.log('   Password actualizado para simulacion de Koru');
         adminUser = existingAdmin;
     } else {
-        const password = 'admin123';
+        const password = 'test1234!';
         const hashedPassword = await bcrypt.hash(password, 10);
         adminUser = await userModel.create({
-            name: 'Karen Simari (Admin)',
+            name: 'Karen Simari (Koru Admin)',
             email: adminEmail,
             password: hashedPassword,
             role: 'admin',
         });
-        console.log(`✅ Admin user created: ${adminEmail}`);
+        console.log(`✅ Admin user created (Koru Simulation): ${adminEmail}`);
     }
 
     // Cliente: simarikaren@gmail.com
@@ -71,7 +71,7 @@ async function bootstrap() {
     // 2. CREAR FORMULARIO DE PRUEBA (ASIGNADO AL CLIENTE)
     // ---------------------------------------------------------
     const testAppId = 'test-form-001';
-    const existingForm = await formModel.findOne({ app_id: testAppId });
+    const existingForm = await formModel.findOne({ formId: testAppId });
 
     if (existingForm) {
         console.log('✅ Test form already exists:', testAppId);
@@ -96,7 +96,7 @@ async function bootstrap() {
             title: 'Formulario de Cliente',
             name: 'Contacto Prueba',
             status: 'active',
-            app_id: testAppId,
+            formId: testAppId,
             fields_config: [
                 {
                     id: 'nombre',

@@ -71,7 +71,7 @@ En **modo producción** (cuando tengas el JWT de Koru integrado):
 ```json
 {
   "title": "Mi Nuevo Formulario",
-  "app_id": "mi-form-002",
+  "form_id": "mi-form-002",
   "fields_config": [
     {
       "id": "nombre",
@@ -164,7 +164,7 @@ En **modo producción** (cuando tengas el JWT de Koru integrado):
 ### A. Obtener Configuración
 **Método:** `GET`
 **URL:** `/forms/config/test-form-001`
-> Reemplaza `test-form-001` por el `app_id` que quieras consultar.
+> Reemplaza `test-form-001` por el `form_id` que quieras consultar.
 
 ### B. Enviar Formulario (Submit)
 **Método:** `POST`
@@ -172,7 +172,7 @@ En **modo producción** (cuando tengas el JWT de Koru integrado):
 **Body (JSON):**
 ```json
 {
-  "app_id": "test-form-001",
+  "form_id": "test-form-001",
   "website_id": "localhost",
   "data": {
     "Nombre Completo": "Tester Postman",

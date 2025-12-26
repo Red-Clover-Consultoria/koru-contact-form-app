@@ -1,0 +1,21 @@
+{
+    "name": "Koru Contact Form",
+    "id": "7fd1463d-cd54-420d-afc0-c874879270cf",
+    "version": "1.0.0",
+    "description": "Formularios de contacto inteligentes con gestión interna y diseño dinámico.",
+    "author": "Red Clover",
+    "endpoints": {
+        "base": "http://localhost:3001",
+        "auth": "/auth/login",
+        "config_ui": "http://localhost:5173/dashboard",
+        "manifest": "/app_manifest.json"
+    },
+    "widget": {
+        "script_url": "http://localhost:5174/index.js",
+        "config_schema": "/config_schema.json"
+    },
+    "permissions": [
+        "websites:read",
+        "apps:manage"
+    ]
+}

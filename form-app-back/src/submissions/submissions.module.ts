@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { SubmissionsController } from './submissions.controller';
 import { SubmissionsService } from './submissions.service';
 import { Submission, SubmissionSchema } from './schemas/submission.schema';
-import { FormsModule } from '../forms/forms.module'; // Necesitamos acceder a Forms para validar el 'app_id'
+import { FormsModule } from '../forms/forms.module'; // Necesitamos acceder a Forms para validar el 'form_id'
 
 @Module({
     imports: [

@@ -28,7 +28,7 @@ function App() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         {/* Public Widget Route */}
-        <Route path="/widget/:appId" element={<WidgetPreview />} />
+        <Route path="/widget/:formId" element={<WidgetPreview />} />
       </Routes>
     </BrowserRouter>
   );

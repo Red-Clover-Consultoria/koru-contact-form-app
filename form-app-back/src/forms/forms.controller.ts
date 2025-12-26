@@ -49,9 +49,9 @@ export class FormsController {
     // ENDPOINT PÚBLICO (WIDGET DE FRONTEND)
     // ==========================================
 
-    @Get('config/:appId')
-    async getConfig(@Param('appId') appId: string) {
-        return this.formsService.findConfigByAppId(appId);
+    @Get('config/:formId')
+    async getConfig(@Param('formId') formId: string) {
+        return this.formsService.findConfigByFormId(formId);
     }
 
     // ==========================================
@@ -89,5 +89,20 @@ export class FormsController {
     @Delete(':id')
     async remove(@Param('id') id: string) {
         return this.formsService.remove(id);
+    }
+
+    /**
+     * Activar formulario tras validación con Koru Suite
+     */
+    @Post(':id/activate')
+    async activate(
+        @Param('id') id: string,
+        @Body('websiteId') websiteId: string,
+        @Body('userId') userId?: string
+    ) {
+        const effectiveUserId = userId || '676d6540c946f04c6439e623';
+        const koruToken = 'simulated_token';
+
+        return this.formsService.activate(id, websiteId, koruToken, effectiveUserId);
     }
 }

@@ -1,13 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useFormStore from '../stores/useFormStore';
+import useAuthStore from '../stores/useAuthStore';
 import EmbedCodeModal from '../components/EmbedCodeModal';
 
 const Dashboard = () => {
-    const { forms, fetchForms, deleteForm, isLoading, error } = useFormStore();
+    const { forms, fetchForms, deleteForm, activateForm, isLoading, error } = useFormStore();
+    const { user } = useAuthStore();
     const [selectedForm, setSelectedForm] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const navigate = useNavigate();
+
+    // Koru Context simulation (assuming user login provided this)
+    const koruContext = {
+        app_id: "7fd1463d-cd54-420d-afc0-c874879270cf",
+        website: {
+            id: "6d4b69b6-9a9e-436a-8216-7398a210b7ef",
+            url: "https://test.com"
+        }
+    };
 
     useEffect(() => {
         fetchForms();
@@ -19,9 +29,18 @@ const Dashboard = () => {
         }
     };
 
-    const handleShowEmbed = (form) => {
+    const handleOpenEmbed = (form) => {
         setSelectedForm(form);
         setIsModalOpen(true);
+    };
+
+    const handleActivate = async (id) => {
+        try {
+            await activateForm(id, koruContext.website.id);
+            alert('¡Formulario activado con éxito!');
+        } catch (err) {
+            alert('Error al activar: ' + err.message);
+        }
     };
 
     return (
@@ -56,67 +75,87 @@ const Dashboard = () => {
                                         Título
                                     </th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ID de la app
+                                        ID del formulario
                                     </th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Estado
                                     </th>
-                                    <th scope="col" className="relative px-6 py-3">
-                                        <span className="sr-only">Actions</span>
+                                    <th scope="col" className="relative px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Acciones
                                     </th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {forms.map((form) => (
-                                    <tr key={form.id || form._id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">{form.title}</div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-500">{form.app_id}</div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${form.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                                }`}>
-                                                {form.status || 'Activo'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
-                                            <button
-                                                onClick={() => handleShowEmbed(form)}
-                                                className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-2 py-1 rounded"
-                                            >
-                                                Obtener código
-                                            </button>
-                                            <Link to={`/forms/${form.id || form._id}`} className="text-primary hover:underline">
-                                                Editar
-                                            </Link>
-                                            <button
-                                                onClick={() => handleDelete(form.id || form._id)}
-                                                className="text-red-600 hover:text-red-900"
-                                            >
-                                                Eliminar
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {forms.map((form) => {
+                                    const isActive = form.status === 'active';
+                                    return (
+                                        <tr key={form.id || form._id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">{form.title}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-500">{form.formId}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex flex-col">
+                                                    <span className={`px-2 py-1 flex items-center w-fit text-xs leading-5 font-semibold rounded-full ${isActive ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                                        <span className={`w-2 h-2 rounded-full mr-1.5 ${isActive ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
+                                                        {isActive ? 'Active' : 'Inactive'}
+                                                    </span>
+                                                    {!isActive && (
+                                                        <span className="text-[10px] text-gray-400 mt-1 italic">Pendiente de activación</span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                                                {isActive ? (
+                                                    <button
+                                                        onClick={() => handleOpenEmbed(form)}
+                                                        className="text-indigo-600 hover:text-indigo-900 font-semibold"
+                                                    >
+                                                        Embed Code
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleActivate(form.id || form._id)}
+                                                        className="text-green-600 hover:text-green-900 font-semibold"
+                                                    >
+                                                        Activar en Koru
+                                                    </button>
+                                                )}
+                                                <Link to={`/forms/${form.id || form._id}`} className="text-primary hover:underline">
+                                                    Editar
+                                                </Link>
+                                                <button
+                                                    onClick={() => handleDelete(form.id || form._id)}
+                                                    className="text-red-400 hover:text-red-600"
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
                             </tbody>
                         </table>
                     ) : (
                         <div className="text-center py-12">
-                            <p className="text-gray-500 text-lg">No forms found.</p>
-                            <p className="text-gray-400">Get started by creating a new form.</p>
+                            <p className="text-gray-500 text-lg">No se encontraron formularios.</p>
+                            <p className="text-gray-400">Comienza creando uno nuevo.</p>
                         </div>
                     )}
                 </div>
             )}
 
-            <EmbedCodeModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                appId={selectedForm?.app_id}
-                token={selectedForm?.token} // Assumes token is part of form object or fetched via backend logic designed earlier
-            />
+            {isModalOpen && selectedForm && (
+                <EmbedCodeModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    formId={selectedForm.formId}
+                    websiteId={koruContext.website.id}
+                    appId={koruContext.app_id}
+                />
+            )}
         </div>
     );
 };

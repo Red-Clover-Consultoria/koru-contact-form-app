@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 import useFormStore from '../../stores/useFormStore';
 
-const FormWidget = ({ appId, token, isPreview = false }) => {
+const FormWidget = ({ formId, token, isPreview = false }) => {
     const { fetchConfig } = useFormStore();
     const [config, setConfig] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -14,9 +14,9 @@ const FormWidget = ({ appId, token, isPreview = false }) => {
 
     useEffect(() => {
         const load = async () => {
-            if (!appId) return;
+            if (!formId) return;
             try {
-                const result = await fetchConfig(appId, token);
+                const result = await fetchConfig(formId, token);
                 const { config: fetchedConfig, token: fetchedToken } = result;
 
                 setConfig(fetchedConfig);
@@ -43,7 +43,7 @@ const FormWidget = ({ appId, token, isPreview = false }) => {
         };
 
         load();
-    }, [appId, token, fetchConfig]);
+    }, [formId, token, fetchConfig]);
 
     const validate = () => {
         const newErrors = {};
@@ -69,7 +69,7 @@ const FormWidget = ({ appId, token, isPreview = false }) => {
         setStatus('submitting');
         try {
             const payload = {
-                app_id: appId,
+                formId: formId,
                 website_id: window.location.hostname,  // Use underscore to match backend DTO
                 data: formData,
                 metadata: {

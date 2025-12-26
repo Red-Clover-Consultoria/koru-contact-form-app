@@ -30,16 +30,18 @@ export class AuthService {
 
         // Comprobar si tenemos credenciales/config de Koru para decidir el modo
         const koruApiUrl = this.configService.get<string>('KORU_API_URL');
-        const koruAppId = this.configService.get<string>('KORU_APP_ID');
+        const koruAppId = this.configService.get<string>('KORU_FORM_ID');
         const koruAppSecret = this.configService.get<string>('KORU_APP_SECRET');
 
         const hasKoruConfig = !!koruApiUrl && !!koruAppId && !!koruAppSecret;
 
         if (!hasKoruConfig) {
+            console.log(`[AuthService] Login attempt for ${email}: MODO DESARROLLO (LOCAL)`);
             // ====== MODO DESARROLLO: LOGIN LOCAL ======
             return this.localDevLogin(email, password);
         }
 
+        console.log(`[AuthService] Login attempt for ${email}: MODO PRODUCCIÓN (KORU SUITE)`);
         // ====== MODO PRODUCCIÓN: LOGIN CONTRA KORU SUITE ======
         try {
             const response = await lastValueFrom(

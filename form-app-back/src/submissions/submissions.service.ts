@@ -17,17 +17,17 @@ export class SubmissionsService {
 
     async processSubmission(payload: SubmitFormDto): Promise<SubmissionDocument> {
         console.log('[SubmissionsService] Procesando nueva submission...');
-        console.log('[SubmissionsService] APP ID:', payload.app_id);
+        console.log('[SubmissionsService] APP ID:', payload.formId);
 
         // 1. Verificar la Existencia y Estado del Formulario
         const formConfig = await this.formModel.findOne({
-            app_id: payload.app_id,
+            formId: payload.formId,
             status: { $in: ['active', 'draft'] }
         }).exec();
 
         if (!formConfig) {
-            console.error('[SubmissionsService] ❌ Formulario no encontrado:', payload.app_id);
-            throw new NotFoundException(`Formulario con APP ID ${payload.app_id} no encontrado o inactivo.`);
+            console.error('[SubmissionsService] ❌ Formulario no encontrado:', payload.formId);
+            throw new NotFoundException(`Formulario con APP ID ${payload.formId} no encontrado o inactivo.`);
         }
 
         console.log('[SubmissionsService] ✅ Formulario encontrado:', formConfig.name);
@@ -38,7 +38,7 @@ export class SubmissionsService {
 
         if (isSpam) {
             // Registrar el intento de spam y descartar el correo, pero devolver 200 OK para no alertar al bot 
-            console.log(`[SubmissionsService] 🚫 SPAM DETECTADO para el formulario ${payload.app_id}`);
+            console.log(`[SubmissionsService] 🚫 SPAM DETECTADO para el formulario ${payload.formId}`);
 
             // Creamos la entrada como spam para logging interno, sin devolver error al cliente
             const spamEntry = new this.submissionModel({

@@ -34,7 +34,7 @@ class SubmissionMetadataDto {
 export class SubmitFormDto {
     @IsNotEmpty()
     @IsString()
-    app_id: string; // ID único del formulario (ej: "koru-form-123") [cite: 36]
+    formId: string; // ID único del formulario (ej: "koru-form-123") [cite: 36]
 
     @IsOptional()
     @IsString()

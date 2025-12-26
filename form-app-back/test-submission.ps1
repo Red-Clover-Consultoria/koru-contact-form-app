@@ -5,7 +5,7 @@ Write-Host "========================================`n" -ForegroundColor Cyan
 
 $url = "http://localhost:3001/api/forms/submit"
 $body = @{
-    app_id = "test-form-001"
+    form_id = "test-form-001"
     website_id = "example.com"
     data = @{
         "Nombre Completo" = "Juan Perez"

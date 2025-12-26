@@ -9,13 +9,13 @@ async function checkFormConfig() {
     const formModel = app.get<Model<Form>>(getModelToken(Form.name));
 
     const testAppId = 'test-form-001';
-    const form = await formModel.findOne({ app_id: testAppId });
+    const form = await formModel.findOne({ formId: testAppId });
 
     if (form) {
         console.log('\n========================================');
         console.log('CONFIGURACIÓN DEL FORMULARIO');
         console.log('========================================');
-        console.log('App ID:', form.app_id);
+        console.log('App ID:', form.formId);
         console.log('Admin Email:', form.email_settings.admin_email);
         console.log('Autoresponder:', form.email_settings.autoresponder);
         console.log('Subject Line:', form.email_settings.subject_line);

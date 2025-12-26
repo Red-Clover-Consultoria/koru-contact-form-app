@@ -53,13 +53,31 @@ const useFormStore = create((set, get) => ({
         return response.data;
     },
 
+    activateForm: async (id, websiteId) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await api.post(`/forms/${id}/activate`, { websiteId });
+            set(state => ({
+                forms: state.forms.map(f => (f.id || f._id) === id ? response.data : f),
+                isLoading: false
+            }));
+            return response.data;
+        } catch (error) {
+            set({
+                error: error.response?.data?.message || 'Failed to activate form',
+                isLoading: false
+            });
+            throw error;
+        }
+    },
+
     // Centralized fetchConfig according to guide
-    fetchConfig: async (appId, propToken) => {
+    fetchConfig: async (formId, propToken) => {
         set({ isLoading: true, error: null });
         try {
             const headers = propToken ? { 'X-Koru-Token': propToken } : {};
             // Volvemos a la versión funcional: Sin prefijo /api para la configuración pública
-            const response = await api.get(`/forms/config/${appId}`, { headers });
+            const response = await api.get(`/forms/config/${formId}`, { headers });
 
             const { token, ...config } = response.data;
 

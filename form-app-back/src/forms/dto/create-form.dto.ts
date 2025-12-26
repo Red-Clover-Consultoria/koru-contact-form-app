@@ -13,7 +13,7 @@ export class CreateFormDto {
 
     @IsNotEmpty()
     @IsString()
-    app_id: string; // ID único del formulario (ej: koru-form-123)
+    formId: string; // ID único del formulario (ej: koru-form-123)
 
     @IsArray()
     @ValidateNested({ each: true })

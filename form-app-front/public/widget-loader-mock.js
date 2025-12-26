@@ -3,11 +3,11 @@
 
     // 1. Obtener parámetros del script
     const script = document.currentScript || document.getElementById('koru-loader');
-    const appId = script.getAttribute('data-app-id');
+    const formId = script.getAttribute('data-form-id');
     const token = script.getAttribute('data-token');
 
-    if (!appId || appId === 'REEMPLAZAR_CON_APP_ID_REAL') {
-        return console.error("Koru Loader: appId no válido. Por favor configura un appId real.");
+    if (!formId || formId === 'REEMPLAZAR_CON_APP_ID_REAL') {
+        return console.error("Koru Loader: formId no válido. Por favor configura un formId real.");
     }
 
     // 2. Crear el contenedor si es modo inline (opcional)
@@ -18,7 +18,7 @@
 
     // Construir la URL del widget (apuntando al servidor de desarrollo de Vite)
     const baseUrl = window.location.origin; // Asume que test-widget.html está en el mismo server
-    iframe.src = `${baseUrl}/widget/${appId}?token=${token || ''}`;
+    iframe.src = `${baseUrl}/widget/${formId}?token=${token || ''}`;
 
     // Estilos para que se vea como el widget real
     Object.assign(iframe.style, {
@@ -36,5 +36,5 @@
     iframe.id = 'koru-widget-iframe';
     document.body.appendChild(iframe);
 
-    console.log(`Koru Mock Loader: Widget ${appId} inyectado vía iframe.`);
+    console.log(`Koru Mock Loader: Widget ${formId} inyectado vía iframe.`);
 })();

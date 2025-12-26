@@ -2,7 +2,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import FormWidget from '../components/widget/FormWidget';
 
 const WidgetPreview = () => {
-    const { appId } = useParams();
+    const { formId } = useParams();
     const location = useLocation();
 
     // Obtener el token de los query params (?token=...)
@@ -12,8 +12,8 @@ const WidgetPreview = () => {
     return (
         <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
 
-            {/* Render the widget with appId and token */}
-            <FormWidget appId={appId} token={token} isPreview={true} />
+            {/* Render the widget with formId and token */}
+            <FormWidget formId={formId} token={token} isPreview={true} />
         </div>
     );
 };

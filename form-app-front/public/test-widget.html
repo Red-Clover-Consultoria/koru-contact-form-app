@@ -65,7 +65,7 @@
             <strong>Instrucciones:</strong>
             <ol>
                 <li>Asegúrate de que el backend esté corriendo en <code>http://localhost:3001</code>.</li>
-                <li>Reemplaza el <code>data-app-id</code> en el script de abajo con un ID válido de tu base de datos.
+                <li>Reemplaza el <code>data-form-id</code> en el script de abajo con un ID válido de tu base de datos.
                 </li>
                 <li>Este archivo simula la carga asíncrona desde una CDN.</li>
             </ol>
@@ -73,7 +73,7 @@
     </div> -->
 
     <!-- Simulación del Snippet que copia el usuario -->
-    <script id="koru-loader" src="./widget-loader-mock.js" data-app-id="koru-g4tfc76l3"
+    <script id="koru-loader" src="./widget-loader-mock.js" data-form-id="test-form-001"
         data-token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBfaWQiOiJrb3J1LWc0dGZjNzZsMyIsInRpdGxlIjoiSW5saW5lIHBydWViYSIsIm93bmVyX2lkIjoiNjk0MWU2YjI1YmVhMzI3YzI3MzExMWQ5IiwiaWF0IjoxNzY2MDI2NjYyLCJleHAiOjE3NjYyODU4NjJ9.CHFjpg1Wv-tBP_suYBZNyWnvdSeRLwWB4m7MHzToMJo"
         async></script>
 
@@ -83,11 +83,11 @@
         (function () {
             console.log("Koru Loader: Iniciando...");
             const script = document.getElementById('koru-loader');
-            const appId = script.getAttribute('data-app-id');
+            const formId = script.getAttribute('data-form-id');
             const token = script.getAttribute('data-token');
 
-            if (appId === 'REEMPLAZAR_CON_APP_ID_REAL') {
-                console.warn("Koru Loader: Debes configurar un appId real en test-widget.html");
+            if (formId === 'REEMPLAZAR_CON_APP_ID_REAL') {
+                console.warn("Koru Loader: Debes configurar un formId real en test-widget.html");
             }
 
             // En un entorno real, aquí se inyectaría el bundle de React.
@@ -103,7 +103,7 @@
             statusDiv.style.border = '1px solid #90cdf4';
             statusDiv.style.borderRadius = '8px';
             statusDiv.style.zIndex = '9999';
-            statusDiv.innerHTML = `<strong>Koru Widget Status:</strong><br>App ID: ${appId}<br>Loader cargado correctamente.`;
+            statusDiv.innerHTML = `<strong>Koru Widget Status:</strong><br>Form ID: ${formId}<br>Loader cargado correctamente.`;
             document.body.appendChild(statusDiv);
         })();
     </script>
