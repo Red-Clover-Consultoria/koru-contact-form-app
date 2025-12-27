@@ -7,6 +7,7 @@ import { FormsService } from './forms.service';
 import { CreateFormDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RequestWithUser } from '../auth/interfaces/user.interface';
 
 @Controller('forms')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
@@ -14,22 +15,22 @@ export class FormsController {
     constructor(private readonly formsService: FormsService) { }
 
     // ==========================================
-    // ENDPOINTS DE GESTIÓN (CRUD) - MODO DESARROLLO SIN AUTENTICACIÓN
+    // ENDPOINTS DE GESTIÓN (CRUD)
     // ==========================================
 
     @UseGuards(JwtAuthGuard)
     @Post()
-    async create(@Body() createFormDto: CreateFormDto, @Req() req: Request) {
+    async create(@Body() createFormDto: CreateFormDto, @Req() req: RequestWithUser) {
         // En Koru Suite, el primer sitio del usuario se asigna como dueño por defecto
-        const user = req['user'];
+        const user = req.user;
         const ownerId = user?.websites?.[0]; // Usamos el ID de sitio de Koru como owner
         return this.formsService.create(createFormDto, ownerId);
     }
 
     @UseGuards(JwtAuthGuard)
     @Get()
-    async findAll(@Req() req: Request) {
-        const user = req['user'];
+    async findAll(@Req() req: RequestWithUser) {
+        const user = req.user;
         // Si es cliente, solo ve sus sitios. Si no tiene sitios, no ve nada.
         return this.formsService.findAll(user?.websites);
     }
@@ -41,22 +42,22 @@ export class FormsController {
 
     @UseGuards(JwtAuthGuard)
     @Get(':id')
-    async findOne(@Param('id') id: string, @Req() req: Request) {
-        const user = req['user'];
+    async findOne(@Param('id') id: string, @Req() req: RequestWithUser) {
+        const user = req.user;
         return this.formsService.findOne(id, user?.websites);
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch(':id')
-    async update(@Param('id') id: string, @Body() updateFormDto: UpdateFormDto, @Req() req: Request) {
-        const user = req['user'];
+    async update(@Param('id') id: string, @Body() updateFormDto: UpdateFormDto, @Req() req: RequestWithUser) {
+        const user = req.user;
         return this.formsService.update(id, updateFormDto, user?.websites);
     }
 
     @UseGuards(JwtAuthGuard)
     @Delete(':id')
-    async remove(@Param('id') id: string, @Req() req: Request) {
-        const user = req['user'];
+    async remove(@Param('id') id: string, @Req() req: RequestWithUser) {
+        const user = req.user;
         return this.formsService.remove(id, user?.websites);
     }
 
@@ -88,9 +89,9 @@ export class FormsController {
     @Get(':id/validate-permissions')
     async validatePermissions(
         @Param('id') id: string,
-        @Req() req: Request
+        @Req() req: RequestWithUser
     ) {
-        const user = req['user'];
+        const user = req.user;
         return this.formsService.validatePermissions(id, user);
     }
 }
