@@ -74,6 +74,7 @@ export class AuthService {
                     role: koruData.user.role || 'user',
                     koruId: koruData.user.id,
                     koruToken: koruData.access_token,
+                    websites: koruData.user.websites || [], // Persistencia de sitios
                 });
                 user = await newUser.save();
             } else {
@@ -81,18 +82,30 @@ export class AuthService {
                 user.role = koruData.user.role || user.role;
                 user.koruId = koruData.user.id;
                 user.koruToken = koruData.access_token;
+                user.websites = koruData.user.websites || []; // Actualización de sitios
                 await user.save();
             }
 
-            // DEVOLVEMOS EL TOKEN DE KORU DIRECTAMENTE
-            // Esto asegura que la sesión del frontend sea válida para el KoruAuthMiddleware
+            // GENERAR JWT PROPIO PARA NUESTRA SESIÓN INTERNA
+            // Incluimos los websites de Koru en el payload para el multi-tenant
+            const payload = {
+                id: user._id,
+                email: user.email,
+                role: user.role,
+                websites: koruData.user.websites || [], // Permisos de Koru
+                koruToken: koruData.access_token, // Guardamos el original por si se necesita después
+            };
+
+            const token = this.jwtService.sign(payload);
+
             return {
-                token: koruData.access_token,
+                token,
                 user: {
                     id: user._id,
                     email: user.email,
                     name: user.name,
                     role: user.role,
+                    websites: payload.websites,
                 },
             };
         } catch (error: any) {

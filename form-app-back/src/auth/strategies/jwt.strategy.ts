@@ -13,6 +13,7 @@ interface JwtPayload {
     id: string;
     email: string;
     role: string;
+    websites?: string[]; // Sitios autorizados en Koru
 }
 
 @Injectable()
@@ -30,16 +31,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         });
     }
 
-    // Método de validación: se ejecuta después de verificar la firma del token
+    // Método de validación: se ejecuta después de verificar la firma del token con JWT_SECRET
     async validate(payload: JwtPayload) {
-        // Busca al usuario en la DB para confirmar que sigue activo
+        // Busca al usuario en la DB para confirmar que existe
         const user = await this.userModel.findById(payload.id);
 
         if (!user) {
-            throw new UnauthorizedException('Token no válido');
+            throw new UnauthorizedException('Token no válido: usuario no encontrado');
         }
 
-        // Retorna el usuario completo (o el payload) para inyectarlo en req.user
+        // Retorna el payload que incluye 'websites' para inyectarlo en req.user
         return payload;
     }
 }

@@ -32,15 +32,7 @@ import { KoruAuthMiddleware } from './middleware/koru-auth.middleware';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(KoruAuthMiddleware)
-      .forRoutes(
-        { path: 'forms', method: RequestMethod.GET },
-        { path: 'forms', method: RequestMethod.POST },
-        { path: 'forms/:id', method: RequestMethod.GET },
-        { path: 'forms/:id', method: RequestMethod.PATCH },
-        { path: 'forms/:id', method: RequestMethod.DELETE },
-        { path: 'forms/:id/validate-permissions', method: RequestMethod.GET },
-      );
+    // La seguridad ahora se maneja vía JwtAuthGuard en los controladores
+    // eliminamos el middleware de Koru para evitar el conflicto 401 en el Dashboard.
   }
 }

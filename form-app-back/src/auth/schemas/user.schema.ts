@@ -20,6 +20,9 @@ export class User {
     @Prop({ required: false })
     koruId: string; // ID del usuario en Koru Suite
 
+    @Prop({ type: [String], default: [] })
+    websites: string[]; // IDs de los sitios gestionados por el usuario
+
     @Prop({ required: false })
     koruToken: string; // Token JWT de Koru
 }
