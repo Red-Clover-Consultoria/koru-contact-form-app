@@ -1,12 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Prefijo Global para la API
   app.setGlobalPrefix('api');
+
+  // Filtro Global de Excepciones para seguridad (fuga de datos)
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   // Habilitar CORS para permitir peticiones desde el frontend (Vite) y Koru Suite
   const allowedOrigins = process.env.ALLOWED_ORIGINS
@@ -22,8 +26,7 @@ async function bootstrap() {
   // Validación Global de DTOs
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true, // Elimina propiedades no definidas en el DTO
-    forbidNonWhitelisted: true, // Lanza error si llegan propiedades extra
-    transform: true, // Transforma los tipos de los datos (ej: string '1' a number 1)
+    transform: true, // Transforma los tipos de los datos
   }));
 
   await app.listen(process.env.PORT ?? 3001);
