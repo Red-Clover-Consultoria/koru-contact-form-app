@@ -1,25 +1,19 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule, RequestMethod } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FormsModule } from './forms/forms.module';
 import { SubmissionsModule } from './submissions/submissions.module';
-
-// Importamos los módulos de características (futuros)
-
-
 import { MailModule } from './mail/mail.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { KoruAuthMiddleware } from './middleware/koru-auth.middleware';
 
 @Module({
   imports: [
-    // Configuración de Variables de Entorno
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
     }),
-
-    //Conexión a MongoDB 
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -27,7 +21,6 @@ import { UsersModule } from './users/users.module';
       }),
       inject: [ConfigService],
     }),
-
     FormsModule,
     SubmissionsModule,
     MailModule,
@@ -37,4 +30,17 @@ import { UsersModule } from './users/users.module';
   controllers: [],
   providers: [],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(KoruAuthMiddleware)
+      .forRoutes(
+        { path: 'forms', method: RequestMethod.GET },
+        { path: 'forms', method: RequestMethod.POST },
+        { path: 'forms/:id', method: RequestMethod.GET },
+        { path: 'forms/:id', method: RequestMethod.PATCH },
+        { path: 'forms/:id', method: RequestMethod.DELETE },
+        { path: 'forms/:id/validate-permissions', method: RequestMethod.GET },
+      );
+  }
+}

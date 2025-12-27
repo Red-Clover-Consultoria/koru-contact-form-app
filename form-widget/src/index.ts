@@ -23,14 +23,18 @@ class KoruWidgetForm extends KoruWidget {
         // El SDK ya autenticó el website_id contra Koru Suite antes de llegar aquí.
         // Si la validación falla, onInit NUNCA se ejecuta.
 
-        this.formId = this.container?.getAttribute('data-form-id') || null;
-        this.targetWebsiteId = this.container?.getAttribute('data-website-id') || null;
+        // Capturamos los datos del contenedor o del SDK
+        this.formId = this.container?.getAttribute('data-form-id') || this.authData?.custom_data || null;
+        this.targetWebsiteId = this.container?.getAttribute('data-website-id') || (this.authData as any)?.website?.id || null;
 
-        console.log('KoruFormWidget: Authorized for Website:', this.targetWebsiteId);
+        console.log('KoruFormWidget Initialized:', {
+            formId: this.formId,
+            websiteId: this.targetWebsiteId,
+            authorized: this.authData?.authorized
+        });
 
         if (!this.formId) {
-            this.log('Error: No formId found');
-            return;
+            this.log('Error: data-form-id is required');
         }
 
         // Aquí podríamos pedir configuración extra a NUESTRO backend si fuera necesario,

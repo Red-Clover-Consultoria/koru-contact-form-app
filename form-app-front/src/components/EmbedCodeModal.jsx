@@ -3,12 +3,13 @@ import React from 'react';
 const EmbedCodeModal = ({ isOpen, onClose, formId, websiteId, appId }) => {
     if (!isOpen) return null;
 
+    const vercelUrl = 'https://koru-form-b008ydvyx-karens-projects-c3e39980.vercel.app/index.js';
     const embedCode = `<!-- Contenedor del Widget -->
-<div class="koru-widget-container" data-form-id="${formId}"></div>
+<div class="koru-contact-form" data-form-id="${formId}"></div>
 
-<!-- Koru SDK -->
+<!-- Koru SDK & Widget Script -->
 <script 
-  src="https://koru.sh/widget.js" 
+  src="${vercelUrl}" 
   data-website-id="${websiteId}" 
   data-app-id="${appId}" 
   data-custom-data="${formId}"

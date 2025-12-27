@@ -110,6 +110,9 @@ export class Form {
 
     @Prop({ type: String, required: false })
     token?: string; // JWT token para visualización/alta desde el frontend
+
+    @Prop({ type: String, required: false })
+    website_id?: string; // Website ID asociado tras activación
 }
 
 export const FormSchema = SchemaFactory.createForClass(Form);

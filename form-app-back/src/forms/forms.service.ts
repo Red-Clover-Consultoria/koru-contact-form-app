@@ -1,6 +1,6 @@
 // src/forms/forms.service.ts
 
-import { Injectable, NotFoundException, BadRequestException, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException, InternalServerErrorException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Form } from './schemas/form.schema';
@@ -8,13 +8,18 @@ import { CreateFormDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
 import { User } from '../auth/schemas/user.schema';
 import { JwtService } from '@nestjs/jwt';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class FormsService {
+    private readonly KORU_APP_ID = '7fd1463d-cd54-420d-afc0-c874879270cf';
+
     constructor(
         @InjectModel(Form.name) private formModel: Model<Form>,
         @InjectModel(User.name) private userModel: Model<User>,
         private jwtService: JwtService,
+        private readonly httpService: HttpService,
     ) { }
 
     // 1. CREATE: Crear un nuevo formulario
@@ -168,45 +173,95 @@ export class FormsService {
     }
 
     // 7. ACTIVATE: Validar con Koru Suite y activar en MongoDB
-    async activate(formId: string, websiteId: string, koruToken: string, userId: string): Promise<Form> {
+    async activate(formId: string, websiteId: string, koruToken: string): Promise<Form> {
         if (!Types.ObjectId.isValid(formId)) {
             throw new BadRequestException('ID de formulario inválido.');
         }
 
-        // 1. Verificar si el formulario existe y pertenece al usuario
-        const form = await this.formModel.findOne({ _id: formId, owner_id: new Types.ObjectId(userId) }).exec();
+        // 1. Verificar si el formulario existe
+        const form = await this.formModel.findById(formId).exec();
         if (!form) {
-            throw new NotFoundException(`Formulario no encontrado o no tienes permisos.`);
+            throw new NotFoundException(`Formulario no encontrado.`);
         }
 
         // 2. Consultar a Koru Suite si la App está habilitada para el website_id
-        // Si no hay Koru configurado (Modo DEV), simulamos el OK
-        const koruApiUrl = process.env.KORU_API_URL;
-        const koruAppId = process.env.KORU_FORM_ID;
+        try {
+            const response = await firstValueFrom(
+                this.httpService.get(`https://www.korusuite.com/api/websites/${websiteId}`, {
+                    headers: { Authorization: `Bearer ${koruToken}` }
+                })
+            );
 
-        if (koruApiUrl && koruAppId) {
-            // MODO PRODUCCIÓN: Validar contra Koru
-            // Usamos el endpoint GET /api/auth/widget o similar que valide el website_id
-            // Según la arquitectura, si el login fue exitoso, ya confiamos en el website_id de la lista de websites del usuario.
-            // Pero haremos una validación explícita para seguir el requerimiento.
-            try {
-                // Simulación de llamada a Koru (Verificación de activación)
-                // En un escenario real, llamaríamos a Koru API.
-                console.log(`[FormsService] Validando Activación en Koru para website ${websiteId}...`);
+            const websiteData = response.data;
+            // Confirmamos que nuestra APP_ID está vinculada a ese sitio
+            const isInstalled = websiteData.apps?.some((app: any) => app.appId === this.KORU_APP_ID || app.id === this.KORU_APP_ID);
 
-                // Si llegamos aquí es porque el usuario tiene acceso a ese website_id (visto en el login)
-                // Procedemos a activar.
-            } catch (error) {
-                form.status = 'inactive';
-                await form.save();
-                throw new BadRequestException('Koru Suite no pudo confirmar la activación para este sitio.');
+            if (!isInstalled) {
+                throw new ForbiddenException('La App Koru Contact Form no está instalada en este sitio.');
             }
-        } else {
-            console.log(`[FormsService] Modo DEV: Simulando activación exitosa para ${websiteId}`);
+        } catch (error) {
+            if (error instanceof ForbiddenException) throw error;
+
+            const status = error.response?.status;
+            if (status === 401) throw new UnauthorizedException('Token de Koru Suite inválido.');
+            if (status === 403) throw new ForbiddenException('No tienes permisos sobre este website.');
+
+            throw new BadRequestException(
+                error.response?.data?.message || 'Error al validar con Koru Suite'
+            );
         }
 
-        // 3. Actualizar estado en MongoDB
+        // 3. Actualizar estado y website_id en MongoDB
         form.status = 'active';
+        (form as any).website_id = websiteId;
         return form.save();
+    }
+
+    async getFormConfig(formId: string, websiteId: string): Promise<Form> {
+        if (!Types.ObjectId.isValid(formId)) {
+            throw new BadRequestException('ID de formulario inválido.');
+        }
+
+        const form = await this.formModel.findOne({
+            _id: formId,
+            status: 'active'
+        }).exec();
+
+        if (!form) {
+            console.error(`[FormsService] Config requested for inactive or missing form: ${formId}`);
+            throw new NotFoundException('El formulario no está activo o no existe.');
+        }
+
+        // Validación de Dominio/Propiedad
+        if ((form as any).website_id !== websiteId) {
+            console.error(`[FormsService] Domain mismatch: Found ${form.website_id}, requested ${websiteId}`);
+            throw new ForbiddenException('Este sitio no está autorizado para mostrar este formulario.');
+        }
+
+        return form;
+    }
+
+    async validatePermissions(formId: string, koruUser: any): Promise<{ authorized: boolean }> {
+        if (!Types.ObjectId.isValid(formId)) {
+            throw new BadRequestException('ID de formulario inválido.');
+        }
+
+        const form = await this.formModel.findById(formId).exec();
+        if (!form) {
+            throw new NotFoundException(`Formulario no encontrado.`);
+        }
+
+        const websiteId = (form as any).website_id;
+        if (!websiteId) {
+            throw new ForbiddenException('El formulario no ha sido activado para ningún sitio.');
+        }
+
+        // El middleware adjunta 'koruUser' con la lista de 'websites' autorizados
+        const isAuthorized = koruUser.websites?.includes(websiteId);
+        if (!isAuthorized) {
+            throw new ForbiddenException('No tienes permisos sobre el sitio vinculado a este formulario.');
+        }
+
+        return { authorized: true };
     }
 }

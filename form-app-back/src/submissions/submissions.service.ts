@@ -17,7 +17,8 @@ export class SubmissionsService {
 
     async processSubmission(payload: SubmitFormDto): Promise<SubmissionDocument> {
         console.log('[SubmissionsService] Procesando nueva submission...');
-        console.log('[SubmissionsService] APP ID:', payload.formId);
+        console.log('[SubmissionsService] FORM ID:', payload.formId);
+        console.log('[SubmissionsService] APP ID:', payload.app_id);
 
         // 1. Verificar la Existencia y Estado del Formulario
         const formConfig = await this.formModel.findOne({
@@ -44,6 +45,7 @@ export class SubmissionsService {
             const spamEntry = new this.submissionModel({
                 form_id: formConfig._id,
                 website_id: payload.website_id,
+                app_id: payload.app_id,
                 data: payload.data,
                 metadata: payload.metadata,
                 status: 'archived',
@@ -60,6 +62,7 @@ export class SubmissionsService {
         const newSubmission = new this.submissionModel({
             form_id: formConfig._id,
             website_id: payload.website_id,
+            app_id: payload.app_id,
             data: payload.data,
             metadata: payload.metadata,
             status: 'unread',

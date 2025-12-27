@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Form, FormSchema } from './schemas/form.schema';
 import { FormsController } from './forms.controller';
@@ -12,6 +13,7 @@ import { AuthModule } from '../auth/auth.module';
             { name: Form.name, schema: FormSchema },
             { name: User.name, schema: UserSchema },
         ]),
+        HttpModule,
         AuthModule,
     ],
     controllers: [FormsController],

@@ -1,6 +1,10 @@
 // src/forms/forms.controller.ts
 
-import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+    Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe, Headers,
+    UnauthorizedException, ForbiddenException, Query, BadRequestException, Req
+} from '@nestjs/common';
+import { Request } from 'express';
 import { FormsService } from './forms.service';
 import { CreateFormDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
@@ -45,14 +49,6 @@ export class FormsController {
         return this.formsService.findAll();
     }
 
-    // ==========================================
-    // ENDPOINT PÚBLICO (WIDGET DE FRONTEND)
-    // ==========================================
-
-    @Get('config/:formId')
-    async getConfig(@Param('formId') formId: string) {
-        return this.formsService.findConfigByFormId(formId);
-    }
 
     // ==========================================
     // ENDPOINTS DE GESTIÓN (CONTINUACIÓN)
@@ -94,15 +90,34 @@ export class FormsController {
     /**
      * Activar formulario tras validación con Koru Suite
      */
-    @Post(':id/activate')
+    @Patch(':id/activate')
     async activate(
         @Param('id') id: string,
         @Body('websiteId') websiteId: string,
-        @Body('userId') userId?: string
+        @Headers('Authorization') authHeader: string
     ) {
-        const effectiveUserId = userId || '676d6540c946f04c6439e623';
-        const koruToken = 'simulated_token';
+        // Extraer token Bearer
+        const koruToken = authHeader?.replace('Bearer ', '');
+        return this.formsService.activate(id, websiteId, koruToken);
+    }
 
-        return this.formsService.activate(id, websiteId, koruToken, effectiveUserId);
+    @Get('config/:id')
+    async getConfig(
+        @Param('id') id: string,
+        @Query('websiteId') websiteId: string
+    ) {
+        if (!websiteId) {
+            throw new BadRequestException('Se requiere websiteId para cargar la configuración.');
+        }
+        return this.formsService.getFormConfig(id, websiteId);
+    }
+
+    @Get(':id/validate-permissions')
+    async validatePermissions(
+        @Param('id') id: string,
+        @Req() req: Request
+    ) {
+        const koruUser = req['koruUser'];
+        return this.formsService.validatePermissions(id, koruUser);
     }
 }

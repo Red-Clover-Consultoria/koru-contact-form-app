@@ -40,6 +40,10 @@ export class SubmitFormDto {
     @IsString()
     website_id?: string; // ID del sitio web donde se instaló el widget [cite: 37]
 
+    @IsOptional()
+    @IsString()
+    app_id?: string; // ID de la aplicación que realiza el envío
+
     @IsNotEmpty()
     @IsObject()
     @IsNotEmpty()

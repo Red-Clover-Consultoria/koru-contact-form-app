@@ -13,6 +13,10 @@ export class Submission {
     @Prop({ type: String, required: true })
     website_id: string;
 
+    // ID de la aplicación que realiza el envío
+    @Prop({ type: String, required: false })
+    app_id?: string;
+
     // Objeto que contiene las respuestas (par clave-valor)
     @Prop({ type: Object, required: true })
     data: Record<string, any>;

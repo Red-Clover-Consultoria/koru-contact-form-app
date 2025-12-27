@@ -19,6 +19,7 @@ export default defineConfig({
         extend: true,
       },
     },
+    minify: true,
   },
   define: {
     'process.env': {},

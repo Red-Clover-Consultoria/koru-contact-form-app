@@ -56,7 +56,7 @@ const useFormStore = create((set, get) => ({
     activateForm: async (id, websiteId) => {
         set({ isLoading: true, error: null });
         try {
-            const response = await api.post(`/forms/${id}/activate`, { websiteId });
+            const response = await api.patch(`/forms/${id}/activate`, { websiteId });
             set(state => ({
                 forms: state.forms.map(f => (f.id || f._id) === id ? response.data : f),
                 isLoading: false
@@ -98,6 +98,16 @@ const useFormStore = create((set, get) => ({
                 isLoading: false
             });
             throw error;
+        }
+    },
+
+    checkPermissions: async (id) => {
+        try {
+            const response = await api.get(`/forms/${id}/validate-permissions`);
+            return response.data; // { authorized: true }
+        } catch (error) {
+            console.error('Permission check failed:', error);
+            return { authorized: false };
         }
     }
 }));

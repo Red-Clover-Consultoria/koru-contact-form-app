@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useFormStore from '../stores/useFormStore';
 import useAuthStore from '../stores/useAuthStore';
+import ActivationButton from '../components/ActivationButton';
 import EmbedCodeModal from '../components/EmbedCodeModal';
 
 const Dashboard = () => {
-    const { forms, fetchForms, deleteForm, activateForm, isLoading, error } = useFormStore();
+    const { forms, fetchForms, deleteForm, isLoading, error } = useFormStore();
     const { user } = useAuthStore();
     const [selectedForm, setSelectedForm] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,6 +20,9 @@ const Dashboard = () => {
         }
     };
 
+    const [isValidating, setIsValidating] = useState(false);
+    const { checkPermissions } = useFormStore();
+
     useEffect(() => {
         fetchForms();
     }, [fetchForms]);
@@ -29,17 +33,16 @@ const Dashboard = () => {
         }
     };
 
-    const handleOpenEmbed = (form) => {
-        setSelectedForm(form);
-        setIsModalOpen(true);
-    };
+    const handleOpenEmbed = async (form) => {
+        setIsValidating(true);
+        const result = await checkPermissions(form.id || form._id);
+        setIsValidating(false);
 
-    const handleActivate = async (id) => {
-        try {
-            await activateForm(id, koruContext.website.id);
-            alert('¡Formulario activado con éxito!');
-        } catch (err) {
-            alert('Error al activar: ' + err.message);
+        if (result && result.authorized) {
+            setSelectedForm(form);
+            setIsModalOpen(true);
+        } else {
+            alert('No tienes permisos suficientes en Koru Suite para este formulario o sitio.');
         }
     };
 
@@ -88,8 +91,9 @@ const Dashboard = () => {
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {forms.map((form) => {
                                     const isActive = form.status === 'active';
+                                    const currentId = form.id || form._id;
                                     return (
-                                        <tr key={form.id || form._id} className="hover:bg-gray-50 transition-colors">
+                                        <tr key={currentId} className="hover:bg-gray-50 transition-colors">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm font-medium text-gray-900">{form.title}</div>
                                             </td>
@@ -111,17 +115,16 @@ const Dashboard = () => {
                                                 {isActive ? (
                                                     <button
                                                         onClick={() => handleOpenEmbed(form)}
-                                                        className="text-indigo-600 hover:text-indigo-900 font-semibold"
+                                                        disabled={isValidating}
+                                                        className="text-indigo-600 hover:text-indigo-900 font-semibold disabled:opacity-50"
                                                     >
-                                                        Embed Code
+                                                        {isValidating ? 'Validando...' : 'Embed Code'}
                                                     </button>
                                                 ) : (
-                                                    <button
-                                                        onClick={() => handleActivate(form.id || form._id)}
-                                                        className="text-green-600 hover:text-green-900 font-semibold"
-                                                    >
-                                                        Activar en Koru
-                                                    </button>
+                                                    <ActivationButton
+                                                        formId={currentId}
+                                                        websiteId={koruContext.website.id}
+                                                    />
                                                 )}
                                                 <Link to={`/forms/${form.id || form._id}`} className="text-primary hover:underline">
                                                     Editar
