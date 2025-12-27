@@ -29,23 +29,28 @@ export class AuthService {
         const { password } = loginDto;
 
         // Comprobar si tenemos credenciales/config de Koru para decidir el modo
-        const koruApiUrl = this.configService.get<string>('KORU_API_URL');
-        const koruAppId = this.configService.get<string>('KORU_FORM_ID');
+        const koruApiUrl = this.configService.get<string>('KORU_API_URL') || 'https://www.korusuite.com/api';
+        const koruAppId = this.configService.get<string>('KORU_APP_ID');
         const koruAppSecret = this.configService.get<string>('KORU_APP_SECRET');
 
-        const hasKoruConfig = !!koruApiUrl && !!koruAppId && !!koruAppSecret;
+        const hasKoruConfig = !!koruAppId && !!koruAppSecret;
 
         if (!hasKoruConfig) {
             console.log(`[AuthService] Login attempt for ${email}: MODO DESARROLLO (LOCAL)`);
-            // ====== MODO DESARROLLO: LOGIN LOCAL ======
             return this.localDevLogin(email, password);
         }
 
         console.log(`[AuthService] Login attempt for ${email}: MODO PRODUCCIÓN (KORU SUITE)`);
-        // ====== MODO PRODUCCIÓN: LOGIN CONTRA KORU SUITE ======
+        console.log(`[AuthService] Using App ID: ${koruAppId}`);
+
         try {
+            // El Identity Broker de Koru espera username/password en el body raíz
+            // y las credenciales de la APP en los headers.
+            // URL corregida: evitamos duplicar /api si ya viene en la variable.
+            const loginUrl = `${koruApiUrl.replace(/\/$/, '')}/auth/login`;
+
             const response = await lastValueFrom(
-                this.httpService.post(`${koruApiUrl}/api/auth/login`, {
+                this.httpService.post(loginUrl, {
                     username: email,
                     password,
                 }, {
@@ -57,9 +62,9 @@ export class AuthService {
                 })
             );
 
-            const koruData = (response as any).data;
+            const koruData = response.data;
 
-            // Buscar o crear usuario en nuestra base de datos
+            // Buscar o crear usuario en nuestra base de datos para persistencia local/roles
             let user: UserDocument | null = await this.userModel.findOne({ email: koruData.user.email }).exec();
 
             if (!user) {
@@ -72,7 +77,6 @@ export class AuthService {
                 });
                 user = await newUser.save();
             } else {
-                // Actualizar datos del usuario desde Koru
                 user.name = koruData.user.name;
                 user.role = koruData.user.role || user.role;
                 user.koruId = koruData.user.id;
@@ -80,11 +84,7 @@ export class AuthService {
                 await user.save();
             }
 
-            if (!user) {
-                throw new UnauthorizedException('No se pudo autenticar el usuario de Koru.');
-            }
-
-            // Generar JWT propio para nuestra aplicación
+            // Generar JWT propio para nuestra sesión interna
             const token = this.generateToken(user);
 
             return {
@@ -97,14 +97,20 @@ export class AuthService {
                 },
             };
         } catch (error: any) {
-            // Manejar diferentes tipos de errores de Koru
-            if (error.response?.status === 401) {
-                throw new UnauthorizedException('Credenciales inválidas en Koru Suite');
-            } else if (error.response?.status === 403) {
-                throw new UnauthorizedException('Usuario no autorizado en Koru Suite');
+            const status = error.response?.status;
+            const errorData = error.response?.data;
+
+            console.error(`[AuthService] Koru Login Error (${status}):`, JSON.stringify(errorData, null, 2) || error.message);
+
+            if (status === 401) {
+                // El error puede ser por credenciales de usuario o por App Secret inválido
+                const message = errorData?.message || 'Credenciales inválidas en Koru Suite';
+                throw new UnauthorizedException(message);
+            } else if (status === 403) {
+                throw new UnauthorizedException('Acceso denegado: Tu usuario no tiene permisos para esta App.');
             } else {
                 throw new BadRequestException(
-                    error.response?.data?.message || 'Error al conectar con Koru Suite'
+                    errorData?.message || 'Error de conexión con el Identity Broker de Koru'
                 );
             }
         }

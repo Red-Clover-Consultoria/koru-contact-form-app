@@ -11,16 +11,21 @@ import { JwtService } from '@nestjs/jwt';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 
+import { ConfigService } from '@nestjs/config';
+
 @Injectable()
 export class FormsService {
-    private readonly KORU_APP_ID = '7fd1463d-cd54-420d-afc0-c874879270cf';
-
     constructor(
         @InjectModel(Form.name) private formModel: Model<Form>,
         @InjectModel(User.name) private userModel: Model<User>,
         private jwtService: JwtService,
         private readonly httpService: HttpService,
+        private readonly configService: ConfigService,
     ) { }
+
+    private get KORU_APP_ID() {
+        return this.configService.get<string>('KORU_APP_ID') || '7fd1463d-cd54-420d-afc0-c874879270cf';
+    }
 
     // 1. CREATE: Crear un nuevo formulario
     //
