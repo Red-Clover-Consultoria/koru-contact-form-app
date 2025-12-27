@@ -84,11 +84,10 @@ export class AuthService {
                 await user.save();
             }
 
-            // Generar JWT propio para nuestra sesión interna
-            const token = this.generateToken(user);
-
+            // DEVOLVEMOS EL TOKEN DE KORU DIRECTAMENTE
+            // Esto asegura que la sesión del frontend sea válida para el KoruAuthMiddleware
             return {
-                token,
+                token: koruData.access_token,
                 user: {
                     id: user._id,
                     email: user.email,
@@ -116,17 +115,7 @@ export class AuthService {
         }
     }
 
-    // GENERADOR DE TOKEN JWT PROPIO
-    private generateToken(user: UserDocument): string {
-        const payload = {
-            id: user._id,
-            email: user.email,
-            role: user.role,
-        };
-        return this.jwtService.sign(payload);
-    }
-
-    // LOGIN LOCAL (DESARROLLO) USANDO USERS DE MONGO
+    // LOGIN LOCAL (DESARROLLO)
     private async localDevLogin(email: string, password: string): Promise<{ token: string; user: any }> {
         const user = await this.userModel.findOne({ email }).exec();
 
@@ -139,7 +128,8 @@ export class AuthService {
             throw new UnauthorizedException('Credenciales inválidas');
         }
 
-        const token = this.generateToken(user);
+        // En desarrollo, generamos un token temporal si no hay Koru
+        const token = this.jwtService.sign({ id: user._id, email: user.email, role: user.role });
 
         return {
             token,
