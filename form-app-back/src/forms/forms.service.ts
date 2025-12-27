@@ -27,34 +27,28 @@ export class FormsService {
     }
 
     // 1. CREATE: Crear un nuevo formulario
-    async create(createFormDto: CreateFormDto, ownerId?: string): Promise<Form> {
+    // EN KORU SUITE: 'ownerId' se reemplaza conceptualmente por 'websiteId'
+    async create(createFormDto: CreateFormDto, websiteId?: string): Promise<Form> {
         const existingForm = await this.formModel.findOne({ formId: createFormDto.formId }).exec();
         if (existingForm) {
             throw new ConflictException(`Ya existe un formulario con el APP ID: ${createFormDto.formId}`);
         }
 
-        // Resolver el owner efectivo (en Koru, ownerId es el primer website_id del usuario)
-        let effectiveOwnerId: string | undefined = ownerId;
-
-        if (!effectiveOwnerId) {
-            const devClientEmail = process.env.KORU_DEV_CLIENT_EMAIL || 'simarikaren@gmail.com';
-            const clientUser = await this.userModel.findOne({ email: devClientEmail }).exec();
-            if (!clientUser) {
-                throw new InternalServerErrorException(`No se encontró el usuario cliente de desarrollo.`);
-            }
-            effectiveOwnerId = clientUser._id.toString();
+        if (!websiteId) {
+            throw new BadRequestException('No se pudo determinar el sitio web autorizado para crear el formulario.');
         }
 
         const token = this.jwtService.sign({
             formId: createFormDto.formId,
             title: createFormDto.title,
-            owner_id: effectiveOwnerId,
+            website_id: websiteId, // Ahora el token va ligado al Website
         });
 
         const createdForm = new this.formModel({
             ...createFormDto,
             name: createFormDto.title,
-            owner_id: Types.ObjectId.isValid(effectiveOwnerId) ? new Types.ObjectId(effectiveOwnerId) : undefined,
+            // owner_id: Ahora es opcional y no lo forzamos si no es ObjectId válido
+            website_id: websiteId, // Guardamos la relación crítica para el multi-tenant
             status: 'draft',
             token,
         });

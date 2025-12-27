@@ -23,8 +23,13 @@ export class FormsController {
     async create(@Body() createFormDto: CreateFormDto, @Req() req: RequestWithUser) {
         // En Koru Suite, el primer sitio del usuario se asigna como dueño por defecto
         const user = req.user;
-        const ownerId = user?.websites?.[0]; // Usamos el ID de sitio de Koru como owner
-        return this.formsService.create(createFormDto, ownerId);
+        const websiteId = user?.websites?.[0]; // Usamos el ID de sitio de Koru para asignar el formulario
+
+        if (!websiteId) {
+            throw new BadRequestException('Tu usuario no tiene sitios web autorizados en Koru Suite para crear formularios.');
+        }
+
+        return this.formsService.create(createFormDto, websiteId);
     }
 
     @UseGuards(JwtAuthGuard)

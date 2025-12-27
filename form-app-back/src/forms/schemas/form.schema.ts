@@ -80,8 +80,9 @@ export type FormDocument = HydratedDocument<Form>;
 @Schema({ timestamps: true, collection: 'forms' })
 export class Form {
     // Referencia al dueño del formulario (Administrador). Referencia a la colección 'users'.
-    @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-    owner_id: Types.ObjectId;
+    // EN KORU SUITE, la propiedad principal es 'website_id', el 'owner_id' es legacy o auxiliar.
+    @Prop({ type: Types.ObjectId, ref: 'User', required: false })
+    owner_id?: Types.ObjectId;
 
     @Prop({ required: true, type: String })
     title: string;
@@ -111,8 +112,8 @@ export class Form {
     @Prop({ type: String, required: false })
     token?: string; // JWT token para visualización/alta desde el frontend
 
-    @Prop({ type: String, required: false })
-    website_id?: string; // Website ID asociado tras activación
+    @Prop({ type: String, required: false, index: true })
+    website_id?: string; // Website ID asociado. Indexado para búsquedas rápidas.
 }
 
 export const FormSchema = SchemaFactory.createForClass(Form);
