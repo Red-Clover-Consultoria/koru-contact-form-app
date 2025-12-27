@@ -186,8 +186,9 @@ export class FormsService {
 
         // 2. Consultar a Koru Suite si la App está habilitada para el website_id
         try {
+            const KORU_API_URL = process.env.KORU_API_URL || 'https://www.korusuite.com/api';
             const response = await firstValueFrom(
-                this.httpService.get(`https://www.korusuite.com/api/websites/${websiteId}`, {
+                this.httpService.get(`${KORU_API_URL}/websites/${websiteId}`, {
                     headers: { Authorization: `Bearer ${koruToken}` }
                 })
             );

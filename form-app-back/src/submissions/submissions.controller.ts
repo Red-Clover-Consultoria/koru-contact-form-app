@@ -2,7 +2,7 @@ import { Controller, Post, Body, UsePipes, ValidationPipe, HttpStatus, BadReques
 import { SubmissionsService } from './submissions.service';
 import { SubmitFormDto } from './dto/submit-form.dto';
 
-@Controller('api/forms')
+@Controller('forms')
 export class SubmissionsController {
     constructor(private readonly submissionsService: SubmissionsService) { }
 
