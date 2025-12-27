@@ -76,7 +76,8 @@ async function bootstrap() {
     if (existingForm) {
         console.log('✅ Test form already exists:', testAppId);
         // Actualizar owner al cliente
-        if (clientUser && existingForm.owner_id.toString() !== clientUser._id.toString()) {
+        // Actualizar owner al cliente si está definido
+        if (clientUser && existingForm.owner_id && existingForm.owner_id.toString() !== clientUser._id.toString()) {
             // @ts-ignore
             existingForm.owner_id = clientUser._id;
             console.log('   Owner actualizado al Cliente');
