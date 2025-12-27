@@ -251,13 +251,21 @@ export class FormsService {
             throw new NotFoundException(`Formulario no encontrado.`);
         }
 
+        // Check 1: Form MUST be active
+        if (form.status !== 'active') {
+            throw new ForbiddenException('El formulario debe estar activado para generar su embed code.');
+        }
+
         const websiteId = (form as any).website_id;
         if (!websiteId) {
             throw new ForbiddenException('El formulario no ha sido activado para ningún sitio.');
         }
 
-        // El middleware adjunta 'koruUser' con la lista de 'websites' autorizados
-        const isAuthorized = koruUser.websites?.includes(websiteId);
+        // Check 2: User must manage the website linked to this form
+        // (Token validity is checked by KoruAuthMiddleware - Check 3)
+        const authorizedWebsites = koruUser.websites || [];
+        const isAuthorized = authorizedWebsites.includes(websiteId);
+
         if (!isAuthorized) {
             throw new ForbiddenException('No tienes permisos sobre el sitio vinculado a este formulario.');
         }

@@ -5,6 +5,9 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Prefijo Global para la API
+  app.setGlobalPrefix('api');
+
   // Habilitar CORS para permitir peticiones desde el frontend (Vite) y Koru Suite
   const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',')
