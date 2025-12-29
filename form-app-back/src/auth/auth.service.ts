@@ -63,8 +63,18 @@ export class AuthService {
             );
 
             const koruData = response.data;
+
             console.log('[AuthService] Koru Login Response User Keys:', Object.keys(koruData.user));
-            console.log('[AuthService] Websites received:', koruData.user.websites);
+            // Mapeo explícito: Esperamos un array de objetos { id, url, ... }
+            const rawWebsites = koruData.user.websites || [];
+            console.log('[AuthService] Raw Websites received:', rawWebsites);
+
+            // Extraer solo los IDs
+            const websiteIds = Array.isArray(rawWebsites)
+                ? rawWebsites.map((w: any) => w.id || w) // Soporte para objetos u strings directos
+                : [];
+
+            console.log('[AuthService] Mapped Website IDs:', websiteIds);
 
             // Buscar o crear usuario en nuestra base de datos para persistencia local/roles
             let user: UserDocument | null = await this.userModel.findOne({ email: koruData.user.email }).exec();
@@ -76,7 +86,7 @@ export class AuthService {
                     role: koruData.user.role || 'user',
                     koruId: koruData.user.id,
                     koruToken: koruData.access_token,
-                    websites: koruData.user.websites || [], // Persistencia de sitios
+                    websites: websiteIds, // Guardamos los IDs limpios
                 });
                 user = await newUser.save();
             } else {
@@ -84,18 +94,17 @@ export class AuthService {
                 user.role = koruData.user.role || user.role;
                 user.koruId = koruData.user.id;
                 user.koruToken = koruData.access_token;
-                user.websites = koruData.user.websites || []; // Actualización de sitios
+                user.websites = websiteIds; // Actualizamos los IDs
                 await user.save();
             }
 
             // GENERAR JWT PROPIO PARA NUESTRA SESIÓN INTERNA
-            // Incluimos los websites de Koru en el payload para el multi-tenant
             const payload = {
                 id: user._id,
                 email: user.email,
                 role: user.role,
-                websites: koruData.user.websites || [], // Permisos de Koru
-                koruToken: koruData.access_token, // Guardamos el original por si se necesita después
+                websites: websiteIds, // Inyectamos los IDs en el token
+                koruToken: koruData.access_token,
             };
 
             const token = this.jwtService.sign(payload);
@@ -107,7 +116,7 @@ export class AuthService {
                     email: user.email,
                     name: user.name,
                     role: user.role,
-                    websites: payload.websites,
+                    websites: websiteIds,
                 },
             };
         } catch (error: any) {

@@ -40,7 +40,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             throw new UnauthorizedException('Token no válido: usuario no encontrado');
         }
 
-        // Retorna el payload que incluye 'websites' para inyectarlo en req.user
-        return payload;
+        // Retorna el payload enriquecido para req.user
+        // Es CRÍTICO retornar 'websites' para que el FormsController funcione
+        return {
+            id: payload.id,
+            email: payload.email,
+            role: payload.role,
+            websites: payload.websites || [] // Garantizamos que siempre sea un array
+        };
     }
 }
