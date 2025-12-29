@@ -46,7 +46,6 @@ export class AuthService {
         try {
             // El Identity Broker de Koru espera username/password en el body raíz
             // y las credenciales de la APP en los headers.
-            // URL corregida: evitamos duplicar /api si ya viene en la variable.
             const loginUrl = `${koruApiUrl.replace(/\/$/, '')}/auth/login`;
 
             const response = await lastValueFrom(
@@ -63,11 +62,13 @@ export class AuthService {
             );
 
             const koruData = response.data;
-
+            console.log('[AuthService] Koru Login Response:', koruData);
             console.log('[AuthService] Koru Login Response User Keys:', Object.keys(koruData.user));
-            // Mapeo explícito: Esperamos un array de objetos { id, url, ... }
-            const rawWebsites = koruData.user.websites || [];
-            console.log('[AuthService] Raw Websites received:', rawWebsites);
+
+            // FIX: Koru devuelve 'websites' en la raíz, no dentro de 'user'
+            console.log('[AuthService] Koru Root Keys:', Object.keys(koruData));
+            const rawWebsites = koruData.websites || [];
+            console.log('[AuthService] Raw Websites received (Root):', rawWebsites);
 
             // Extraer solo los IDs
             const websiteIds = Array.isArray(rawWebsites)
