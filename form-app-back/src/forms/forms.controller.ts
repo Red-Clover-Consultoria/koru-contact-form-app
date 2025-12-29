@@ -21,15 +21,24 @@ export class FormsController {
     @UseGuards(JwtAuthGuard)
     @Post()
     async create(@Body() createFormDto: CreateFormDto, @Req() req: RequestWithUser) {
-        // En Koru Suite, el primer sitio del usuario se asigna como dueño por defecto
-        const user = req.user;
-        const websiteId = user?.websites?.[0]; // Usamos el ID de sitio de Koru para asignar el formulario
+        // Obtenemos los sitios permitidos desde el token decodificado
+        const userWebsites = req.user?.websites || [];
 
-        if (!websiteId) {
-            throw new BadRequestException('Tu usuario no tiene sitios web autorizados en Koru Suite para crear formularios.');
+        // 1. Prioridad: websiteId que viene en el DTO (si el usuario eligió uno específico)
+        // 2. Fallback: el primer sitio de su lista (si solo tiene uno o no envió nada)
+        const targetWebsiteId = createFormDto.websiteId || userWebsites[0];
+
+        if (!targetWebsiteId) {
+            // Caso borde: usuario logueado en Koru pero sin ningún website asignado
+            throw new BadRequestException('Tu usuario no tiene sitios web autorizados en Koru Suite.');
         }
 
-        return this.formsService.create(createFormDto, websiteId);
+        // Validación de Seguridad: ¿El sitio objetivo está en la lista de permitidos del usuario?
+        if (!userWebsites.includes(targetWebsiteId)) {
+            throw new ForbiddenException(`No tienes permisos para crear formularios en el sitio: ${targetWebsiteId}`);
+        }
+
+        return this.formsService.create(createFormDto, targetWebsiteId);
     }
 
     @UseGuards(JwtAuthGuard)

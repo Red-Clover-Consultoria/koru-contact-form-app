@@ -9,6 +9,10 @@ export class CreateFormDto {
     @IsString()
     title: string;
 
+    @IsOptional()
+    @IsString()
+    websiteId?: string; // ID del sitio web en Koru Suite
+
     // El 'owner_id' se inyectará desde el JWT en el Controller, no en el Body
 
     @IsNotEmpty()

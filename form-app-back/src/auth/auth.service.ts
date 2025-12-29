@@ -63,6 +63,8 @@ export class AuthService {
             );
 
             const koruData = response.data;
+            console.log('[AuthService] Koru Login Response User Keys:', Object.keys(koruData.user));
+            console.log('[AuthService] Websites received:', koruData.user.websites);
 
             // Buscar o crear usuario en nuestra base de datos para persistencia local/roles
             let user: UserDocument | null = await this.userModel.findOne({ email: koruData.user.email }).exec();
