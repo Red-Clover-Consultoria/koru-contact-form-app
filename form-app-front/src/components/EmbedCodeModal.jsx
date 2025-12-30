@@ -13,6 +13,7 @@ const EmbedCodeModal = ({ isOpen, onClose, formId, websiteId, appId }) => {
   data-website-id="${websiteId}" 
   data-app-id="${appId}" 
   data-custom-data="${formId}"
+  data-app-manager-url="https://www.korusuite.com"
   async
 ></script>`;
 

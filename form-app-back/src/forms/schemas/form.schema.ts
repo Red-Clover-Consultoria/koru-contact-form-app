@@ -114,6 +114,10 @@ export class Form {
 
     @Prop({ type: String, required: false, index: true })
     website_id?: string; // Website ID asociado. Indexado para búsquedas rápidas.
+
+    // Flag maestro para control automático por Cron Job (Si el sitio se elimina en Koru, esto pasa a false)
+    @Prop({ default: true })
+    isActive: boolean;
 }
 
 export const FormSchema = SchemaFactory.createForClass(Form);

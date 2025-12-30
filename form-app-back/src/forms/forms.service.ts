@@ -11,6 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class FormsService {
@@ -187,11 +188,53 @@ export class FormsService {
         }
 
         form.status = 'active';
+        form.isActive = true; // Activar flag maestro
         (form as any).website_id = websiteId;
         return form.save();
     }
 
-    // 8. TRIPLE CHECK: Validación avanzada para el dashboard
+    // 8. CRON JOB: Validación Diaria de Sitios (Midnight)
+    @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+    async validateWebsites() {
+        console.log('[Cron Job] Iniciando validación de sitios en Koru Suite...');
+
+        // 1. Obtener todos los website IDs únicos
+        const forms = await this.formModel.find({}, 'website_id').exec();
+        const websiteIds = [...new Set(forms.map(f => (f as any).website_id).filter(Boolean))];
+
+        console.log(`[Cron Job] Sitios a validar: ${websiteIds.length}`);
+
+        let disabledCount = 0;
+        const KORU_API_URL = this.configService.get('KORU_API_URL') || 'https://www.korusuite.com/api';
+        const KORU_APP_ID = this.configService.get('KORU_APP_ID');
+        const KORU_APP_SECRET = this.configService.get('KORU_APP_SECRET');
+
+        for (const websiteId of websiteIds) {
+            try {
+                // Verificar existencia del sitio usando credenciales de APP (M2M)
+                await firstValueFrom(
+                    this.httpService.get(`${KORU_API_URL}/websites/${websiteId}`, {
+                        headers: {
+                            'X-App-ID': KORU_APP_ID,
+                            'X-App-Secret': KORU_APP_SECRET
+                        }
+                    })
+                );
+                // Si responde 200, el sitio existe y la app tiene acceso -> Todo OK
+                await this.formModel.updateMany({ website_id: websiteId }, { isActive: true });
+
+            } catch (error) {
+                // Si falla (404 Not Found, 403 Forbidden, etc), asumimos sitio inválido/inactivo
+                console.warn(`[Cron Job] Sitio ${websiteId} no válido. Desactivando formularios...`);
+                await this.formModel.updateMany({ website_id: websiteId }, { isActive: false });
+                disabledCount++;
+            }
+        }
+
+        console.log(`[Cron Job] Finalizado. Sitios invalidados/formularios desactivados: ${disabledCount}`);
+    }
+
+    // 9. TRIPLE CHECK: Validación avanzada para el dashboard
     async validatePermissions(formId: string, koruUser: any): Promise<{ authorized: boolean }> {
         if (!Types.ObjectId.isValid(formId)) {
             throw new BadRequestException('ID de formulario inválido.');
@@ -200,6 +243,10 @@ export class FormsService {
         const form = await this.formModel.findById(formId).exec();
         if (!form) {
             throw new NotFoundException(`Formulario no encontrado.`);
+        }
+
+        if (!form.isActive) {
+            throw new ForbiddenException('El formulario ha sido inhabilitado porque su sitio web origen no está activo en Koru Suite.');
         }
 
         if (form.status !== 'active') {
