@@ -2,6 +2,16 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import * as crypto from 'crypto';
+
+// Polyfill para Node.js v18 (Railway) - ScheduleModule usa globalThis.crypto.randomUUID()
+if (typeof globalThis.crypto === 'undefined') {
+  Object.defineProperty(globalThis, 'crypto', {
+    value: {
+      randomUUID: () => crypto.randomUUID(),
+    },
+  });
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
