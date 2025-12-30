@@ -35,11 +35,14 @@ const Dashboard = () => {
 
     const handleOpenEmbed = async (form) => {
         setIsValidating(true);
+        // El websiteId del formulario es prioritario, si no, el primer website del usuario
+        const targetWebsiteId = form.website_id || user?.websites?.[0] || koruContext.website.id;
+
         const result = await checkPermissions(form.id || form._id);
         setIsValidating(false);
 
         if (result && result.authorized) {
-            setSelectedForm(form);
+            setSelectedForm({ ...form, website_id: targetWebsiteId });
             setIsModalOpen(true);
         } else {
             alert('No tienes permisos suficientes en Koru Suite para este formulario o sitio.');
@@ -90,11 +93,12 @@ const Dashboard = () => {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {forms.map((form) => {
-                                    // isGlobalActive es el flag maestro del Cron (Website válido)
-                                    // form.isActive puede venir undefined en legacy, asumimos true
+                                    // isActive es el flag maestro del Cron (Website válido)
+                                    // status: 'active' es la activación manual
                                     const isGlobalActive = form.isActive !== false;
                                     const isFormActive = form.status === 'active';
                                     const currentId = form.id || form._id;
+                                    const targetWebsiteId = form.website_id || user?.websites?.[0] || koruContext.website.id;
 
                                     return (
                                         <tr key={currentId} className="hover:bg-gray-50 transition-colors">
@@ -109,7 +113,7 @@ const Dashboard = () => {
                                                     {!isGlobalActive ? (
                                                         <span className="px-2 py-1 flex items-center w-fit text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                                                             <span className="w-2 h-2 rounded-full mr-1.5 bg-red-500"></span>
-                                                            Website Inactivo
+                                                            Sitio Inactivo
                                                         </span>
                                                     ) : (
                                                         <span className={`px-2 py-1 flex items-center w-fit text-xs leading-5 font-semibold rounded-full ${isFormActive ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
@@ -119,7 +123,7 @@ const Dashboard = () => {
                                                     )}
 
                                                     {!isGlobalActive && (
-                                                        <span className="text-[10px] text-red-400 mt-1 italic">Sitio eliminado en Koru</span>
+                                                        <span className="text-[10px] text-red-400 mt-1 italic">Sitio Inactivo en Koru Suite</span>
                                                     )}
                                                     {isGlobalActive && !isFormActive && (
                                                         <span className="text-[10px] text-gray-400 mt-1 italic">Requiere activación</span>
@@ -127,25 +131,29 @@ const Dashboard = () => {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                                                {isGlobalActive && isFormActive ? (
-                                                    <button
-                                                        onClick={() => handleOpenEmbed(form)}
-                                                        disabled={isValidating}
-                                                        className="text-indigo-600 hover:text-indigo-900 font-semibold disabled:opacity-50"
-                                                    >
-                                                        {isValidating ? 'Validando...' : 'Embed Code'}
-                                                    </button>
+                                                {isGlobalActive ? (
+                                                    isFormActive ? (
+                                                        <button
+                                                            onClick={() => handleOpenEmbed(form)}
+                                                            disabled={isValidating}
+                                                            className="text-indigo-600 hover:text-indigo-900 font-semibold disabled:opacity-50"
+                                                        >
+                                                            {isValidating ? 'Validando...' : 'Código Embebido'}
+                                                        </button>
+                                                    ) : (
+                                                        <ActivationButton
+                                                            formId={currentId}
+                                                            websiteId={targetWebsiteId}
+                                                        />
+                                                    )
                                                 ) : (
-                                                    <ActivationButton
-                                                        formId={currentId}
-                                                        websiteId={koruContext.website.id}
-                                                    />
+                                                    <span className="text-gray-400 cursor-not-allowed italic text-xs">Aviso: Sitio Inactivo en Koru Suite</span>
                                                 )}
-                                                <Link to={`/forms/${form.id || form._id}`} className="text-primary hover:underline">
+                                                <Link to={`/forms/${currentId}`} className="text-primary hover:underline">
                                                     Editar
                                                 </Link>
                                                 <button
-                                                    onClick={() => handleDelete(form.id || form._id)}
+                                                    onClick={() => handleDelete(currentId)}
                                                     className="text-red-400 hover:text-red-600"
                                                 >
                                                     Eliminar
@@ -170,7 +178,7 @@ const Dashboard = () => {
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     formId={selectedForm.formId}
-                    websiteId={koruContext.website.id}
+                    websiteId={selectedForm.website_id || koruContext.website.id}
                     appId={koruContext.app_id}
                 />
             )}

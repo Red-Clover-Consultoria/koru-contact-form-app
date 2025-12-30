@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useFormStore from '../stores/useFormStore';
+import useAuthStore from '../stores/useAuthStore';
 
 // Sections (Placeholders for now)
 import SectionFields from '../components/builder/SectionFields';
@@ -11,6 +12,7 @@ const FormBuilder = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { createForm, updateForm, forms } = useFormStore();
+    const { user } = useAuthStore();
     const isEditMode = !!id && id !== 'new';
 
     const [isLoading, setIsLoading] = useState(false);
@@ -69,12 +71,19 @@ const FormBuilder = () => {
             if (isEditMode) {
                 await updateForm(id, formData);
             } else {
-                await createForm(formData);
+                // Sincronización de WebsiteID: tomarlo de la sesión
+                const websiteId = user?.websites?.[0];
+                if (!websiteId) {
+                    alert('No se pudo determinar el sitio web autorizado. Por favor re-inicia sesión.');
+                    return;
+                }
+                await createForm({ ...formData, websiteId });
             }
             navigate('/dashboard');
         } catch (error) {
             console.error(error);
-            alert('Error al guardar el formulario');
+            const message = error.message || 'Error al guardar el formulario';
+            alert(message);
         } finally {
             setIsLoading(false);
         }

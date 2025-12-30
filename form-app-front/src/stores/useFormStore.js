@@ -15,8 +15,15 @@ const useFormStore = create((set, get) => ({
             const response = await api.get('/forms');
             set({ forms: response.data, isLoading: false });
         } catch (error) {
+            const status = error.response?.status;
+            let message = error.response?.data?.message || 'Error al obtener formularios';
+
+            if (status === 403) {
+                message = 'Este formulario ha sido desactivado porque el sitio web ya no está registrado en Koru Suite.';
+            }
+
             set({
-                error: error.response?.data?.message || 'Failed to fetch forms',
+                error: message,
                 isLoading: false
             });
         }
@@ -40,17 +47,31 @@ const useFormStore = create((set, get) => ({
     },
 
     createForm: async (formData) => {
-        const response = await api.post('/forms', formData);
-        set(state => ({ forms: [...state.forms, response.data] }));
-        return response.data;
+        try {
+            const response = await api.post('/forms', formData);
+            set(state => ({ forms: [...state.forms, response.data] }));
+            return response.data;
+        } catch (error) {
+            if (error.response?.status === 403) {
+                throw new Error('No tienes permisos suficientes o el sitio web no es válido en Koru Suite.');
+            }
+            throw error;
+        }
     },
 
     updateForm: async (id, formData) => {
-        const response = await api.patch(`/forms/${id}`, formData);
-        set(state => ({
-            forms: state.forms.map(f => (f.id || f._id) === id ? response.data : f)
-        }));
-        return response.data;
+        try {
+            const response = await api.patch(`/forms/${id}`, formData);
+            set(state => ({
+                forms: state.forms.map(f => (f.id || f._id) === id ? response.data : f)
+            }));
+            return response.data;
+        } catch (error) {
+            if (error.response?.status === 403) {
+                throw new Error('Este formulario ha sido desactivado porque el sitio web ya no está registrado en Koru Suite.');
+            }
+            throw error;
+        }
     },
 
     activateForm: async (id, websiteId) => {
