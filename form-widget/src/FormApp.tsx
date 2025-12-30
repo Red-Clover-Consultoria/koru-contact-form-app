@@ -28,9 +28,10 @@ interface FormConfig {
 interface FormAppProps {
     formId: string;
     websiteId: string | null;
+    apiUrl?: string; // Nueva prop opcional
 }
 
-const FormApp: React.FC<FormAppProps> = ({ formId, websiteId }) => {
+const FormApp: React.FC<FormAppProps> = ({ formId, websiteId, apiUrl }) => {
     const [config, setConfig] = useState<FormConfig | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -39,8 +40,8 @@ const FormApp: React.FC<FormAppProps> = ({ formId, websiteId }) => {
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [isOpen, setIsOpen] = useState(false); // For Floating layout
 
-    // Backend Base URL
-    const API_BASE_URL = 'http://localhost:3001'; // Cambiado a 3001 para coincidir con el backend real
+    // Backend Base URL: Prioriza la prop -> Localhost de fallback
+    const API_BASE_URL = apiUrl || 'http://localhost:3001';
 
     useEffect(() => {
         const fetchConfig = async () => {

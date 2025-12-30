@@ -7,6 +7,7 @@ class KoruWidgetForm extends KoruWidget {
     private root: Root | null = null;
     private formId: string | null = null;
     private targetWebsiteId: string | null = null;
+    private apiUrl: string | null = null;
 
     constructor() {
         super({
@@ -27,9 +28,13 @@ class KoruWidgetForm extends KoruWidget {
         this.formId = this.container?.getAttribute('data-form-id') || this.authData?.custom_data || null;
         this.targetWebsiteId = this.container?.getAttribute('data-website-id') || (this.authData as any)?.website?.id || null;
 
+        const scriptTag = document.currentScript as HTMLScriptElement;
+        this.apiUrl = scriptTag?.getAttribute('data-api-url') || null;
+
         console.log('KoruFormWidget Initialized:', {
             formId: this.formId,
             websiteId: this.targetWebsiteId,
+            apiUrl: this.apiUrl,
             authorized: this.authData?.authorized
         });
 
@@ -67,7 +72,8 @@ class KoruWidgetForm extends KoruWidget {
                 React.createElement(React.StrictMode, null,
                     React.createElement(FormApp, {
                         formId: this.formId,
-                        websiteId: this.targetWebsiteId
+                        websiteId: this.targetWebsiteId,
+                        apiUrl: this.apiUrl || undefined
                     })
                 )
             );
