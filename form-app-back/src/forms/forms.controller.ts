@@ -39,6 +39,8 @@ export class FormsController {
         }
 
 
+        console.log('DEBUG POST BODY:', createFormDto.websiteId);
+        console.log('DEBUG USER IN REQ:', req.user.websites);
 
         return this.formsService.create(createFormDto, targetWebsiteId);
     }
