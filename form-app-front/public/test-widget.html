@@ -72,41 +72,19 @@
         </div>
     </div> -->
 
-    <!-- Simulación del Snippet que copia el usuario -->
-    <script id="koru-loader" src="./widget-loader-mock.js" data-form-id="test-form-001"
-        data-token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBfaWQiOiJrb3J1LWc0dGZjNzZsMyIsInRpdGxlIjoiSW5saW5lIHBydWViYSIsIm93bmVyX2lkIjoiNjk0MWU2YjI1YmVhMzI3YzI3MzExMWQ5IiwiaWF0IjoxNzY2MDI2NjYyLCJleHAiOjE3NjYyODU4NjJ9.CHFjpg1Wv-tBP_suYBZNyWnvdSeRLwWB4m7MHzToMJo"
-        async></script>
+    <div class="container">
+        <h1>Koru Contact Form - Test en Producción</h1>
+        <p>Cargando widget desde Vercel...</p>
 
-    <!-- Script de Mock del Loader (Solo para esta prueba local) -->
-    <script>
-        // Este bloque simularía lo que hay en widget-loader.js
-        (function () {
-            console.log("Koru Loader: Iniciando...");
-            const script = document.getElementById('koru-loader');
-            const formId = script.getAttribute('data-form-id');
-            const token = script.getAttribute('data-token');
+        <!-- Contenedor del Widget -->
+        <div class="koru-contact-form" data-form-id="koru-vdhhjuhap"></div>
+    </div>
 
-            if (formId === 'REEMPLAZAR_CON_APP_ID_REAL') {
-                console.warn("Koru Loader: Debes configurar un formId real en test-widget.html");
-            }
-
-            // En un entorno real, aquí se inyectaría el bundle de React.
-            // Para este test local, simplemente mostramos un mensaje de éxito
-            // o intentamos cargar el bundle si está disponible localmente.
-
-            const statusDiv = document.createElement('div');
-            statusDiv.style.position = 'fixed';
-            statusDiv.style.bottom = '20px';
-            statusDiv.style.right = '20px';
-            statusDiv.style.padding = '10px';
-            statusDiv.style.background = '#ebf8ff';
-            statusDiv.style.border = '1px solid #90cdf4';
-            statusDiv.style.borderRadius = '8px';
-            statusDiv.style.zIndex = '9999';
-            statusDiv.innerHTML = `<strong>Koru Widget Status:</strong><br>Form ID: ${formId}<br>Loader cargado correctamente.`;
-            document.body.appendChild(statusDiv);
-        })();
-    </script>
+    <!-- Koru SDK & Widget Script -->
+    <script src="https://koru-form-b008ydvyx-karens-projects-c3e39980.vercel.app/index.js"
+        data-website-id="50dc4ac0-4eae-4f45-80d5-c30bf4520662" data-app-id="efc7cd83-aa52-4f3a-b803-4aec7d3be35d"
+        data-custom-data="koru-vdhhjuhap" data-api-url="https://koru-contact-form-app-production.railway.app"
+        data-app-manager-url="https://app-manager.vercel.app" async></script>
 
 </body>
 

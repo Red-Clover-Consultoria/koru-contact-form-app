@@ -4,6 +4,8 @@ const EmbedCodeModal = ({ isOpen, onClose, formId, websiteId, appId }) => {
     if (!isOpen) return null;
 
     const vercelUrl = 'https://koru-form-b008ydvyx-karens-projects-c3e39980.vercel.app/index.js';
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://koru-contact-form-app-production.railway.app'; // Fallback a producción si existe
+
     const embedCode = `<!-- Contenedor del Widget -->
 <div class="koru-contact-form" data-form-id="${formId}"></div>
 
@@ -13,7 +15,8 @@ const EmbedCodeModal = ({ isOpen, onClose, formId, websiteId, appId }) => {
   data-website-id="${websiteId}" 
   data-app-id="${appId}" 
   data-custom-data="${formId}"
-    data-app-manager-url="https://app-manager.vercel.app"
+  data-api-url="${apiUrl}"
+  data-app-manager-url="https://app-manager.vercel.app"
   async
 ></script>`;
 
