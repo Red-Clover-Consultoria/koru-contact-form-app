@@ -56,13 +56,15 @@ const FormApp: React.FC<FormAppProps> = ({ formId, websiteId, apiUrl }) => {
             try {
                 // Enviamos websiteId como query param para validación de dominio
                 const response = await axios.get(`${API_BASE_URL}/api/forms/config/${formId}?websiteId=${websiteId}`);
-                console.log('WIDGET CONFIG RECEIVED:', response.data);
+                const data = response.data;
+                console.log('WIDGET_RECEIVED_DATA:', data);
+                console.log('WIDGET_FIELDS_TYPE:', typeof data.fields_config);
 
-                if (!response.data.fields_config || response.data.fields_config.length === 0) {
+                if (!data.fields_config || data.fields_config.length === 0) {
                     console.warn('WIDGET WARNING: fields_config is empty or missing!');
                 }
 
-                setConfig(response.data);
+                setConfig(data);
 
                 // Initialize form data
                 const initialData: Record<string, any> = {};

@@ -97,7 +97,9 @@ export class FormsController {
         if (!websiteId) {
             throw new BadRequestException('Se requiere websiteId para cargar la configuración.');
         }
-        return this.formsService.getFormConfig(id, websiteId);
+        const formConfig = await this.formsService.getFormConfig(id, websiteId);
+        console.log('API_RESPONSE_PAYLOAD:', JSON.stringify(formConfig));
+        return formConfig;
     }
 
     @UseGuards(JwtAuthGuard)
