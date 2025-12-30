@@ -38,6 +38,8 @@ export class FormsController {
             throw new ForbiddenException(`No tienes permisos para crear formularios en el sitio: ${targetWebsiteId}`);
         }
 
+        console.log(`Local Test: Validating websiteId ${targetWebsiteId}...`);
+
         return this.formsService.create(createFormDto, targetWebsiteId);
     }
 

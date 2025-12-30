@@ -21,12 +21,22 @@ export class AuthService {
     ) { }
 
     // LOGIN
+    // - MODO MOCK (NODE_ENV=development): Devuelve usuario mock sin llamar a Koru
     // - MODO DEV (sin credenciales de Koru): usa usuarios locales de MongoDB (seed).
     // - MODO PROD (con Koru configurado): delega login a Koru Suite.
     async login(loginDto: LoginDto): Promise<{ token: string; user: any }> {
         // Permitimos que el frontend envíe `email` o `username`
         const email = (loginDto as any).email || loginDto.username;
         const { password } = loginDto;
+
+        // ============================================================
+        // MODO MOCK LOCAL (para testing sin API externa)
+        // ============================================================
+        const nodeEnv = this.configService.get<string>('NODE_ENV');
+        if (nodeEnv === 'development') {
+            console.log(`[AuthService] Login attempt for ${email}: MODO MOCK (DEVELOPMENT)`);
+            return this.mockLocalLogin(email, password);
+        }
 
         // Comprobar si tenemos credenciales/config de Koru para decidir el modo
         const koruApiUrl = this.configService.get<string>('KORU_API_URL') || 'https://www.korusuite.com/api';
@@ -163,6 +173,59 @@ export class AuthService {
                 email: user.email,
                 name: user.name,
                 role: user.role,
+            },
+        };
+    }
+
+    // ============================================================
+    // MOCK LOGIN: Para testing local sin llamar a API externa
+    // ============================================================
+    private async mockLocalLogin(email: string, password: string): Promise<{ token: string; user: any }> {
+        // WebsiteId de prueba hardcodeado
+        const MOCK_WEBSITE_ID = '50dc4ac0-4eae-4f45-80d5-c30bf4520662';
+
+        console.log('[AuthService] MOCK LOGIN - No se llama a API externa');
+        console.log('[AuthService] MOCK WEBSITE_ID:', MOCK_WEBSITE_ID);
+
+        // Buscar o crear usuario mock en MongoDB
+        let user = await this.userModel.findOne({ email }).exec();
+
+        if (!user) {
+            // Crear usuario mock si no existe
+            const newUser = new this.userModel({
+                name: 'Usuario Mock',
+                email: email,
+                role: 'admin',
+                koruId: 'mock-koru-id',
+                websites: [MOCK_WEBSITE_ID],
+            });
+            user = await newUser.save();
+            console.log('[AuthService] Usuario mock creado:', user.email);
+        } else {
+            // Actualizar websites del usuario existente
+            user.websites = [MOCK_WEBSITE_ID];
+            await user.save();
+            console.log('[AuthService] Usuario mock actualizado:', user.email);
+        }
+
+        // Generar JWT con los datos mock
+        const payload = {
+            id: user._id,
+            email: user.email,
+            role: user.role || 'admin',
+            websites: [MOCK_WEBSITE_ID],
+        };
+
+        const token = this.jwtService.sign(payload);
+
+        return {
+            token,
+            user: {
+                id: user._id,
+                email: user.email,
+                name: user.name,
+                role: user.role,
+                websites: [MOCK_WEBSITE_ID],
             },
         };
     }

@@ -1,6 +1,7 @@
 import { Module, MiddlewareConsumer, NestModule, RequestMethod } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
 import { FormsModule } from './forms/forms.module';
 import { SubmissionsModule } from './submissions/submissions.module';
 import { MailModule } from './mail/mail.module';
@@ -21,6 +22,7 @@ import { KoruAuthMiddleware } from './middleware/koru-auth.middleware';
       }),
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
     FormsModule,
     SubmissionsModule,
     MailModule,

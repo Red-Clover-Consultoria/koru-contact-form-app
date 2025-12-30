@@ -11,12 +11,12 @@ const Dashboard = () => {
     const [selectedForm, setSelectedForm] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Koru Context simulation (assuming user login provided this)
+    // Koru Context simulation (Real credentials for local test)
     const koruContext = {
-        app_id: "7fd1463d-cd54-420d-afc0-c874879270cf",
+        app_id: "efc7cd83-aa52-4f3a-b803-4aec7d3be35d",
         website: {
-            id: "6d4b69b6-9a9e-436a-8216-7398a210b7ef",
-            url: "https://test.com"
+            id: user?.websites?.[0] || "50dc4ac0-4eae-4f45-80d5-c30bf452066",
+            url: "https://www.redclover.com.ar"
         }
     };
 
@@ -90,8 +90,12 @@ const Dashboard = () => {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {forms.map((form) => {
-                                    const isActive = form.status === 'active';
+                                    // isGlobalActive es el flag maestro del Cron (Website válido)
+                                    // form.isActive puede venir undefined en legacy, asumimos true
+                                    const isGlobalActive = form.isActive !== false;
+                                    const isFormActive = form.status === 'active';
                                     const currentId = form.id || form._id;
+
                                     return (
                                         <tr key={currentId} className="hover:bg-gray-50 transition-colors">
                                             <td className="px-6 py-4 whitespace-nowrap">
@@ -102,17 +106,28 @@ const Dashboard = () => {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex flex-col">
-                                                    <span className={`px-2 py-1 flex items-center w-fit text-xs leading-5 font-semibold rounded-full ${isActive ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                                                        <span className={`w-2 h-2 rounded-full mr-1.5 ${isActive ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
-                                                        {isActive ? 'Active' : 'Inactive'}
-                                                    </span>
-                                                    {!isActive && (
-                                                        <span className="text-[10px] text-gray-400 mt-1 italic">Pendiente de activación</span>
+                                                    {!isGlobalActive ? (
+                                                        <span className="px-2 py-1 flex items-center w-fit text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                            <span className="w-2 h-2 rounded-full mr-1.5 bg-red-500"></span>
+                                                            Website Inactivo
+                                                        </span>
+                                                    ) : (
+                                                        <span className={`px-2 py-1 flex items-center w-fit text-xs leading-5 font-semibold rounded-full ${isFormActive ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                                            <span className={`w-2 h-2 rounded-full mr-1.5 ${isFormActive ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
+                                                            {isFormActive ? 'Activo' : 'Pendiente'}
+                                                        </span>
+                                                    )}
+
+                                                    {!isGlobalActive && (
+                                                        <span className="text-[10px] text-red-400 mt-1 italic">Sitio eliminado en Koru</span>
+                                                    )}
+                                                    {isGlobalActive && !isFormActive && (
+                                                        <span className="text-[10px] text-gray-400 mt-1 italic">Requiere activación</span>
                                                     )}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                                                {isActive ? (
+                                                {isGlobalActive && isFormActive ? (
                                                     <button
                                                         onClick={() => handleOpenEmbed(form)}
                                                         disabled={isValidating}
