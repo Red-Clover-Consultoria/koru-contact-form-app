@@ -89,16 +89,17 @@ export class FormsService {
     }
 
     // 4. CONFIG: Obtener configuración pública para el widget (Público pero con validación de sitio)
-    async getFormConfig(formId: string, websiteId: string): Promise<Form> {
-        if (!Types.ObjectId.isValid(formId)) {
-            throw new BadRequestException('ID de formulario inválido.');
+    async getFormConfig(idOrSlug: string, websiteId: string): Promise<Form> {
+        // Buscamos primero por el campo 'formId' (el slug tipo 'koru-vdhhjuhap')
+        let form = await this.formModel.findOne({ formId: idOrSlug }).exec();
+
+        // Si no lo encuentra por slug, probamos por _id (por si acaso se usa el ID de mongo)
+        if (!form && Types.ObjectId.isValid(idOrSlug)) {
+            form = await this.formModel.findOne({ _id: idOrSlug }).exec();
         }
 
-        // PRIMERO: Buscar el formulario sin filtrar por status
-        const form = await this.formModel.findOne({ _id: formId }).exec();
-
         if (!form) {
-            throw new NotFoundException('Formulario no encontrado.');
+            throw new NotFoundException(`Formulario no encontrado: ${idOrSlug}`);
         }
 
         // SEGUNDO: Validar que el formulario esté habilitado por el Cron (isActive)
