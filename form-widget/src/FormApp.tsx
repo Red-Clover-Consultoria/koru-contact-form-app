@@ -41,7 +41,13 @@ const FormApp: React.FC<FormAppProps> = ({ formId, websiteId, apiUrl }) => {
     const [isOpen, setIsOpen] = useState(false); // For Floating layout
 
     // Backend Base URL: Prioriza la prop -> Localhost de fallback
-    const API_BASE_URL = apiUrl || 'http://localhost:3001';
+    let API_BASE_URL = apiUrl || 'http://localhost:3001';
+
+    // Normalización: Eliminar barra final y sufijo /api redundante (porque lo agregamos en el fetch)
+    API_BASE_URL = API_BASE_URL.replace(/\/$/, '');
+    if (API_BASE_URL.endsWith('/api')) {
+        API_BASE_URL = API_BASE_URL.substring(0, API_BASE_URL.length - 4);
+    }
 
     useEffect(() => {
         const fetchConfig = async () => {
