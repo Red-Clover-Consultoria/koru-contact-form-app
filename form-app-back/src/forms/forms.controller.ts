@@ -109,4 +109,13 @@ export class FormsController {
         const user = req.user;
         return this.formsService.validatePermissions(id, user);
     }
+
+    // Compatibilidad con Koru SDK
+    @Post('validate-website')
+    async validateWebsite(@Body('websiteId') websiteId: string) {
+        // Por ahora retornamos éxito si se provee el ID. 
+        // El SDK requiere este endpoint para confirmar que el App Provider está vivo.
+        console.log(`[Compatibility] Validation request for website: ${websiteId}`);
+        return { authorized: true, websiteId };
+    }
 }

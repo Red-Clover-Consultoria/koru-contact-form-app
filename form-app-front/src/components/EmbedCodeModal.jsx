@@ -3,8 +3,8 @@ import React from 'react';
 const EmbedCodeModal = ({ isOpen, onClose, formId, websiteId, appId }) => {
     if (!isOpen) return null;
 
-    const vercelUrl = 'https://koru-form-b008ydvyx-karens-projects-c3e39980.vercel.app/index.js';
-    const apiUrl = import.meta.env.VITE_API_URL || 'https://koru-contact-form-app-production.railway.app'; // Fallback a producción si existe
+    const vercelUrl = 'https://koru-form-7yyoou5yk-karens-projects-c3e39980.vercel.app/index.js';
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://koru-contact-form-app-production.up.railway.app'; // Fallback corregido
 
     const embedCode = `<!-- Contenedor del Widget -->
 <div class="koru-contact-form" data-form-id="${formId}"></div>
