@@ -82,8 +82,13 @@ const FormBuilder = () => {
             navigate('/dashboard');
         } catch (error) {
             console.error(error);
-            const message = error.message || 'Error al guardar el formulario';
-            alert(message);
+            // Mostrar mensaje específico del backend si existe (ej. error de validación DTO o Koru API)
+            const backendMessage = error.response?.data?.message;
+            const message = Array.isArray(backendMessage)
+                ? backendMessage.join(', ') // Errores de ValidationPipe suelen venir en array
+                : backendMessage || error.message || 'Error al guardar el formulario';
+
+            alert(`Error: ${message}`);
         } finally {
             setIsLoading(false);
         }

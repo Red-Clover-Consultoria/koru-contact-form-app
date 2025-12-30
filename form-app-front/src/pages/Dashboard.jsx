@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useFormStore from '../stores/useFormStore';
 import useAuthStore from '../stores/useAuthStore';
-import ActivationButton from '../components/ActivationButton';
 import EmbedCodeModal from '../components/EmbedCodeModal';
 
 const Dashboard = () => {
@@ -116,36 +115,26 @@ const Dashboard = () => {
                                                             Sitio Inactivo
                                                         </span>
                                                     ) : (
-                                                        <span className={`px-2 py-1 flex items-center w-fit text-xs leading-5 font-semibold rounded-full ${isFormActive ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                                                            <span className={`w-2 h-2 rounded-full mr-1.5 ${isFormActive ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
-                                                            {isFormActive ? 'Activo' : 'Pendiente'}
+                                                        <span className="px-2 py-1 flex items-center w-fit text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                            <span className="w-2 h-2 rounded-full mr-1.5 bg-green-500"></span>
+                                                            Activo
                                                         </span>
                                                     )}
 
                                                     {!isGlobalActive && (
                                                         <span className="text-[10px] text-red-400 mt-1 italic">Sitio Inactivo en Koru Suite</span>
                                                     )}
-                                                    {isGlobalActive && !isFormActive && (
-                                                        <span className="text-[10px] text-gray-400 mt-1 italic">Requiere activación</span>
-                                                    )}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
                                                 {isGlobalActive ? (
-                                                    isFormActive ? (
-                                                        <button
-                                                            onClick={() => handleOpenEmbed(form)}
-                                                            disabled={isValidating}
-                                                            className="text-indigo-600 hover:text-indigo-900 font-semibold disabled:opacity-50"
-                                                        >
-                                                            {isValidating ? 'Validando...' : 'Código Embebido'}
-                                                        </button>
-                                                    ) : (
-                                                        <ActivationButton
-                                                            formId={currentId}
-                                                            websiteId={targetWebsiteId}
-                                                        />
-                                                    )
+                                                    <button
+                                                        onClick={() => handleOpenEmbed(form)}
+                                                        disabled={isValidating}
+                                                        className="text-indigo-600 hover:text-indigo-900 font-semibold disabled:opacity-50"
+                                                    >
+                                                        {isValidating ? 'Validando...' : 'Código Embebido'}
+                                                    </button>
                                                 ) : (
                                                     <span className="text-gray-400 cursor-not-allowed italic text-xs">Aviso: Sitio Inactivo en Koru Suite</span>
                                                 )}

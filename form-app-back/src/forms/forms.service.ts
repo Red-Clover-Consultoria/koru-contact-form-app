@@ -40,7 +40,7 @@ export class FormsService {
         }
 
         // LOG DE DEBUG para testing local
-        console.log(`[FormsService] Local Test: Validating websiteId ${websiteId}...`);
+
 
         // ============================================================
         // MODO MOCK: Skip validación Koru en development
@@ -48,7 +48,6 @@ export class FormsService {
         const nodeEnv = this.configService.get('NODE_ENV');
         if (nodeEnv === 'development') {
             console.log('[FormsService] MOCK MODE: Skipping Koru API validation');
-            console.log(`[FormsService] WebsiteId ${websiteId} accepted without external validation`);
         } else {
             // VALIDAR EXISTENCIA Y PERMISOS DEL WEBSITE EN KORU (REAL-TIME)
             try {
@@ -66,12 +65,13 @@ export class FormsService {
                     })
                 );
             } catch (error) {
-                console.error(`[FormsService] Create Validation Failed for Website ${websiteId}:`, error.message);
+                console.error(`[FormsService] Create Validation Failed for Website ${websiteId}`);
+                console.error(`Error details:`, error.response?.data || error.message);
                 const status = error.response?.status;
                 if (status === 404) {
                     throw new BadRequestException('El Website ID proporcionado no es válido o no existe en Koru Suite.');
                 }
-                throw new BadRequestException('Error al validar el sitio web con Koru Suite.');
+                throw new BadRequestException(`Error al validar el sitio web con Koru Suite: ${error.message}`);
             }
         }
 
@@ -84,10 +84,9 @@ export class FormsService {
         const createdForm = new this.formModel({
             ...createFormDto,
             name: createFormDto.title,
-            // owner_id: Ahora es opcional y no lo forzamos si no es ObjectId válido
-            website_id: websiteId, // Guardamos la relación crítica para el multi-tenant
-            status: 'draft',
-            isActive: true, // Default true, solo el Cron lo baja si el sitio muere
+            website_id: websiteId,
+            status: 'active', // Ahora se activa automáticamente al crear
+            isActive: true,
             token,
         });
 
