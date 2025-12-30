@@ -6,7 +6,7 @@ import EmbedCodeModal from '../components/EmbedCodeModal';
 
 const Dashboard = () => {
     const { forms, fetchForms, deleteForm, isLoading, error } = useFormStore();
-    const { user } = useAuthStore();
+    const { user, websites } = useAuthStore();
     const [selectedForm, setSelectedForm] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -14,7 +14,7 @@ const Dashboard = () => {
     const koruContext = {
         app_id: "efc7cd83-aa52-4f3a-b803-4aec7d3be35d",
         website: {
-            id: user?.websites?.[0] || "50dc4ac0-4eae-4f45-80d5-c30bf452066",
+            id: websites?.[0] || "50dc4ac0-4eae-4f45-80d5-c30bf452066",
             url: "https://www.redclover.com.ar"
         }
     };

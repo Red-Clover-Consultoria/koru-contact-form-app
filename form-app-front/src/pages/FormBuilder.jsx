@@ -12,7 +12,7 @@ const FormBuilder = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { createForm, updateForm, forms } = useFormStore();
-    const { user } = useAuthStore();
+    const { user, websites } = useAuthStore();
     const isEditMode = !!id && id !== 'new';
 
     const [isLoading, setIsLoading] = useState(false);
@@ -72,7 +72,7 @@ const FormBuilder = () => {
                 await updateForm(id, formData);
             } else {
                 // Sincronización de WebsiteID: tomarlo de la sesión
-                const websiteId = user?.websites?.[0];
+                const websiteId = websites?.[0];
                 if (!websiteId) {
                     alert('No se pudo determinar el sitio web autorizado. Por favor re-inicia sesión.');
                     return;

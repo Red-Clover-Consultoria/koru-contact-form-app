@@ -24,7 +24,7 @@ export class AuthService {
     // - MODO MOCK (NODE_ENV=development): Devuelve usuario mock sin llamar a Koru
     // - MODO DEV (sin credenciales de Koru): usa usuarios locales de MongoDB (seed).
     // - MODO PROD (con Koru configurado): delega login a Koru Suite.
-    async login(loginDto: LoginDto): Promise<{ token: string; user: any }> {
+    async login(loginDto: LoginDto): Promise<{ token: string; user: any; websites: any[] }> {
         // Permitimos que el frontend envíe `email` o `username`
         const email = (loginDto as any).email || loginDto.username;
         const { password } = loginDto;
@@ -127,8 +127,8 @@ export class AuthService {
                     email: user.email,
                     name: user.name,
                     role: user.role,
-                    websites: websiteIds,
                 },
+                websites: websiteIds, // Websites en la raíz
             };
         } catch (error: any) {
             const status = error.response?.status;
@@ -151,7 +151,7 @@ export class AuthService {
     }
 
     // LOGIN LOCAL (DESARROLLO)
-    private async localDevLogin(email: string, password: string): Promise<{ token: string; user: any }> {
+    private async localDevLogin(email: string, password: string): Promise<{ token: string; user: any; websites: any[] }> {
         const user = await this.userModel.findOne({ email }).exec();
 
         if (!user || !user.password) {
@@ -174,13 +174,14 @@ export class AuthService {
                 name: user.name,
                 role: user.role,
             },
+            websites: user.websites || [], // Websites en la raíz
         };
     }
 
     // ============================================================
     // MOCK LOGIN: Para testing local sin llamar a API externa
     // ============================================================
-    private async mockLocalLogin(email: string, password: string): Promise<{ token: string; user: any }> {
+    private async mockLocalLogin(email: string, password: string): Promise<{ token: string; user: any; websites: any[] }> {
         // WebsiteId de prueba hardcodeado
         const MOCK_WEBSITE_ID = '50dc4ac0-4eae-4f45-80d5-c30bf4520662';
 
@@ -225,8 +226,8 @@ export class AuthService {
                 email: user.email,
                 name: user.name,
                 role: user.role,
-                websites: [MOCK_WEBSITE_ID],
             },
+            websites: [MOCK_WEBSITE_ID], // Websites en la raíz
         };
     }
 }

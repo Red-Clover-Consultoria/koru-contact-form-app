@@ -4,6 +4,7 @@ import authService from '../services/authService';
 
 const useAuthStore = create((set, get) => ({
     user: null,
+    websites: [],
     token: Cookies.get('token') || null,
     isAuthenticated: !!Cookies.get('token'),
     isLoading: false,
@@ -13,11 +14,11 @@ const useAuthStore = create((set, get) => ({
         set({ isLoading: true, error: null });
         try {
             const data = await authService.login(email, password);
-            // Assuming data contains { token, user }
-            const { token, user } = data;
+            // data contains { token, user, websites }
+            const { token, user, websites } = data;
 
             Cookies.set('token', token, { expires: 7 }); // Expires in 7 days
-            set({ token, user, isAuthenticated: true, isLoading: false });
+            set({ token, user, websites: websites || [], isAuthenticated: true, isLoading: false });
             return user; // Return user for redirection logic
         } catch (error) {
             set({
@@ -60,15 +61,20 @@ const useAuthStore = create((set, get) => ({
 
     logout: () => {
         Cookies.remove('token');
-        set({ user: null, token: null, isAuthenticated: false });
+        set({ user: null, websites: [], token: null, isAuthenticated: false });
     },
 
     hydrate: async () => {
         const token = Cookies.get('token');
         if (token) {
             try {
-                const user = await authService.getMe();
-                set({ user, isAuthenticated: true });
+                const data = await authService.getMe();
+                // data might contain user and websites if backend getMe is updated
+                set({
+                    user: data.user || data,
+                    websites: data.websites || [],
+                    isAuthenticated: true
+                });
             } catch (error) {
                 // If token is invalid, logout
                 get().logout();

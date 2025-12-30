@@ -19,6 +19,11 @@ export class AuthController {
     @UseGuards(JwtAuthGuard)
     @Get('me')
     getProfile(@Req() req: RequestWithUser) {
-        return req.user;
+        // req.user ya contiene 'websites' del JwtStrategy
+        const { websites, ...user } = req.user as any;
+        return {
+            user,
+            websites: websites || []
+        };
     }
 }

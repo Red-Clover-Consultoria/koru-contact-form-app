@@ -37,11 +37,11 @@ async function runLocalTest() {
             password: 'mockpassword123'
         });
 
-        const { token, user } = loginResponse.data;
+        const { token, user, websites } = loginResponse.data;
         console.log('✓ Login exitoso');
         console.log(`  Email: ${user.email}`);
         console.log(`  Role: ${user.role}`);
-        console.log(`  Websites: ${JSON.stringify(user.websites)}`);
+        console.log(`  Websites: ${JSON.stringify(websites)}`);
         console.log(`  Token: ${token.substring(0, 50)}...`);
         console.log('');
 
@@ -53,7 +53,7 @@ async function runLocalTest() {
         console.log('└────────────────────────────────────────────────────────────┘');
 
         const formId = `test-local-${Date.now()}`;
-        const websiteId = user.websites[0]; // Usar el websiteId mockeado
+        const websiteId = websites[0]; // Usar el websiteId mockeado de la raíz
 
         const createResponse = await axios.post(
             `${BASE_URL}/forms`,
