@@ -33,7 +33,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     // Método de validación: se ejecuta después de verificar la firma del token con JWT_SECRET
     async validate(payload: JwtPayload) {
-        console.log('DEBUG STRATEGY EXTRACT:', payload.websites);
         // Busca al usuario en la DB para confirmar que existe
         const user = await this.userModel.findById(payload.id);
 

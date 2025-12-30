@@ -39,41 +39,9 @@ export class FormsService {
             throw new BadRequestException('No se pudo determinar el sitio web autorizado para crear el formulario.');
         }
 
-        // LOG DE DEBUG para testing local
-
-
-        // ============================================================
-        // MODO MOCK: Skip validación Koru en development
-        // ============================================================
-        const nodeEnv = this.configService.get('NODE_ENV');
-        if (nodeEnv === 'development') {
-            console.log('[FormsService] MOCK MODE: Skipping Koru API validation');
-        } else {
-            // VALIDAR EXISTENCIA Y PERMISOS DEL WEBSITE EN KORU (REAL-TIME)
-            try {
-                const KORU_API_URL = this.configService.get('KORU_API_URL') || 'https://www.korusuite.com/api';
-                const KORU_APP_ID = this.configService.get('KORU_APP_ID');
-                const KORU_APP_SECRET = this.configService.get('KORU_APP_SECRET');
-
-                // Usamos credenciales de APP para validar que el sitio existe y es válido en la plataforma
-                await firstValueFrom(
-                    this.httpService.get(`${KORU_API_URL}/websites/${websiteId}`, {
-                        headers: {
-                            'X-App-ID': KORU_APP_ID,
-                            'X-App-Secret': KORU_APP_SECRET
-                        }
-                    })
-                );
-            } catch (error) {
-                console.error(`[FormsService] Create Validation Failed for Website ${websiteId}`);
-                console.error(`Error details:`, error.response?.data || error.message);
-                const status = error.response?.status;
-                if (status === 404) {
-                    throw new BadRequestException('El Website ID proporcionado no es válido o no existe en Koru Suite.');
-                }
-                throw new BadRequestException(`Error al validar el sitio web con Koru Suite: ${error.message}`);
-            }
-        }
+        // NOTA: La validación de permisos del websiteId ya se realiza en el FormsController
+        // basándose en los sitios autorizados dentro del JWT del usuario.
+        // Se elimina la llamada redundante a Koru API que causaba 401 en producción.
 
         const token = this.jwtService.sign({
             formId: createFormDto.formId,

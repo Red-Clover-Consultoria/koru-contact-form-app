@@ -51,7 +51,6 @@ export class AuthService {
         }
 
         console.log(`[AuthService] Login attempt for ${email}: MODO PRODUCCIÓN (KORU SUITE)`);
-        console.log('DEBUG KORU API URL:', this.configService.get('KORU_API_URL'));
         console.log(`[AuthService] Using App ID: ${koruAppId}`);
 
         try {
@@ -73,7 +72,6 @@ export class AuthService {
             );
 
             const koruData = response.data;
-            console.log('DEBUG KORU RESPONSE:', JSON.stringify({ user: koruData.user, websites: koruData.websites }));
             console.log('[AuthService] Koru Login Response User Keys:', Object.keys(koruData.user));
 
             // FIX: Koru devuelve 'websites' en la raíz, no dentro de 'user'
@@ -118,7 +116,6 @@ export class AuthService {
                 websites: websiteIds, // Inyectamos los IDs en el token
                 koruToken: koruData.access_token,
             };
-            console.log('DEBUG JWT PAYLOAD:', payload);
 
             const token = this.jwtService.sign(payload);
 
