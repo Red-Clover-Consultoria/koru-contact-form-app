@@ -28,7 +28,10 @@ async function bootstrap() {
     : ['https://www.korusuite.com', 'http://localhost:5173', 'http://localhost:5174'];
 
   app.enableCors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Permitir cualquier origen (Widget público)
+      callback(null, true);
+    },
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   });

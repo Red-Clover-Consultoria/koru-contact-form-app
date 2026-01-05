@@ -102,7 +102,7 @@ export class FormsService {
             throw new NotFoundException(`Formulario no encontrado: ${idOrSlug}`);
         }
 
-        console.log('DB_CHECK: Form found?', !!form, 'Fields count:', form?.fields_config?.length);
+        console.log('QUERY_RESULT:', form ? 'Form found' : 'Not found', 'Fields:', form?.fields_config);
 
         // SEGUNDO: Validar que el formulario esté habilitado por el Cron (isActive)
         // Si isActive es false, significa que el websiteId ya no existe en Koru Suite
