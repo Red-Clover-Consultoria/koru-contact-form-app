@@ -24,12 +24,12 @@ class KoruWidgetForm extends KoruWidget {
         // El SDK ya autenticó el website_id contra Koru Suite antes de llegar aquí.
         // Si la validación falla, onInit NUNCA se ejecuta.
 
-        // Capturamos los datos del contenedor o del SDK
-        this.formId = this.container?.getAttribute('data-form-id') || this.authData?.custom_data || null;
-        this.targetWebsiteId = this.container?.getAttribute('data-website-id') || (this.authData as any)?.website?.id || null;
-
         const scriptTag = document.currentScript as HTMLScriptElement;
         this.apiUrl = scriptTag?.getAttribute('data-api-url') || null;
+
+        // Capturamos los datos del contenedor o del SDK
+        this.formId = this.container?.getAttribute('data-form-id') || this.authData?.custom_data || null;
+        this.targetWebsiteId = this.container?.getAttribute('data-website-id') || scriptTag?.getAttribute('data-website-id') || (this.authData as any)?.website?.id || null;
 
         console.log('KoruFormWidget Initialized:', {
             formId: this.formId,
