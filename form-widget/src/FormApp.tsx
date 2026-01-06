@@ -29,83 +29,30 @@ interface FormAppProps {
     formId: string;
     websiteId: string | null;
     apiUrl?: string;
-    isAuthorized: boolean;
+    initialConfig: FormConfig;
 }
 
-const FormApp: React.FC<FormAppProps> = ({ formId, websiteId, apiUrl, isAuthorized }) => {
-    const [config, setConfig] = useState<FormConfig | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+const FormApp: React.FC<FormAppProps> = ({ formId, websiteId, apiUrl, initialConfig }) => {
+    const [config, setConfig] = useState<FormConfig>(initialConfig);
+    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState<Record<string, any>>({});
     const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
     const [submitError, setSubmitError] = useState<string | null>(null);
-    const [isOpen, setIsOpen] = useState(false); // For Floating layout
+    const [isOpen, setIsOpen] = useState(false);
 
-    // Backend Base URL Logic
     let API_BASE_URL = apiUrl || 'http://localhost:3001/api';
     API_BASE_URL = API_BASE_URL.replace(/\/$/, '');
 
     useEffect(() => {
-        // 1. Sincronización Estricta: Si no está autorizado, detener inmediatamente.
-        console.log('[FormApp] Auth Status Check:', { isAuthorized, formId, websiteId });
-
-        if (!isAuthorized) {
-            console.warn('[FormApp] Widget not authorized. Aborting.');
-            setError('Acceso denegado: Widget no autorizado por Koru Suite.');
-            setIsLoading(false);
-            return;
+        if (initialConfig && initialConfig.fields_config) {
+            const initialData: Record<string, any> = {};
+            initialConfig.fields_config.forEach((field: FormField) => {
+                initialData[field.id] = '';
+            });
+            setFormData(initialData);
         }
-
-        // 2. Garantía de Parámetros
-        if (!formId || !websiteId) {
-            console.error('[FormApp] Critical: Missing required IDs.', { formId, websiteId });
-            setError('Error de Configuración: Faltan formId o websiteId.');
-            setIsLoading(false);
-            return;
-        }
-
-        const fetchConfig = async () => {
-            setIsLoading(true);
-            try {
-                // Construcción de URL robusta
-                const baseUrl = API_BASE_URL.endsWith('/api')
-                    ? API_BASE_URL
-                    : `${API_BASE_URL}/api`;
-
-                const url = `${baseUrl}/forms/config/${formId}?websiteId=${websiteId}`;
-                console.log("[koru-contact-form] STARTING FETCH:", url);
-
-                const response = await axios.get(url);
-                const data = response.data;
-
-                // 3. Manejo de Respuesta Inmediata
-                if (!data.fields_config || !Array.isArray(data.fields_config) || data.fields_config.length === 0) {
-                    console.error('[FormApp] Invalid Configuration:', data);
-                    throw new Error('El formulario no contiene campos configurados (fields_config vacío).');
-                }
-
-                console.log("[koru-contact-form] CONFIG RECEIVED & VALID:", data.fields_config.length, "fields");
-
-                // Inicializar datos del formulario
-                const initialData: Record<string, any> = {};
-                data.fields_config.forEach((field: FormField) => {
-                    initialData[field.id] = '';
-                });
-                setFormData(initialData);
-                setConfig(data);
-
-            } catch (err: any) {
-                console.error('[FormApp] Fetch Error:', err);
-                const msg = err.response?.data?.message || err.message || 'Error al cargar el formulario.';
-                setError(msg);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchConfig();
-
-    }, [isAuthorized, formId, websiteId, API_BASE_URL]);
+    }, [initialConfig]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>, fieldId: string) => {
         setFormData(prev => ({ ...prev, [fieldId]: e.target.value }));
@@ -156,7 +103,6 @@ const FormApp: React.FC<FormAppProps> = ({ formId, websiteId, apiUrl, isAuthoriz
 
     if (isLoading) return <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'sans-serif', color: '#666' }}>Cargando formulario...</div>;
 
-    // Error visible en DOM
     if (error) return (
         <div style={{
             padding: '20px',
