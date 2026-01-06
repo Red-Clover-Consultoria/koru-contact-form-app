@@ -24,7 +24,11 @@ class KoruWidgetForm extends KoruWidget {
         // El SDK ya autenticó el website_id contra Koru Suite antes de llegar aquí.
         // Si la validación falla, onInit NUNCA se ejecuta.
 
-        const scriptTag = document.currentScript as HTMLScriptElement;
+        // Intento robusto de encontrar el script del widget
+        const scriptTag = document.currentScript as HTMLScriptElement ||
+            document.querySelector('script[data-api-url]') ||
+            document.querySelector('script[src*="koru-form"]');
+
         this.apiUrl = scriptTag?.getAttribute('data-api-url') || null;
 
         // Capturamos los datos del contenedor o del SDK
@@ -48,13 +52,7 @@ class KoruWidgetForm extends KoruWidget {
     }
 
     onRender() {
-        if (!this.formId || !this.authData?.authorized) {
-            if (this.container) {
-                this.container.innerHTML = '<div style="color: red; padding: 10px;">Acceso denegado o Configuración Inválida</div>';
-            }
-            return;
-        }
-
+        // Movemos la lógica de visualización a React para que pueda reaccionar a cambios de estado
         if (this.container) {
             this.root = createRoot(this.container);
             this.renderReact();
@@ -67,13 +65,14 @@ class KoruWidgetForm extends KoruWidget {
     }
 
     private renderReact() {
-        if (this.root && this.formId) {
+        if (this.root) {
             this.root.render(
                 React.createElement(React.StrictMode, null,
                     React.createElement(FormApp, {
-                        formId: this.formId,
+                        formId: this.formId || '',
                         websiteId: this.targetWebsiteId,
-                        apiUrl: this.apiUrl || undefined
+                        apiUrl: this.apiUrl || undefined,
+                        isAuthorized: !!this.authData?.authorized
                     })
                 )
             );
