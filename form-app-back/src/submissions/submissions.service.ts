@@ -72,34 +72,34 @@ export class SubmissionsService {
         const savedSubmission = await newSubmission.save();
         console.log('[SubmissionsService] ✅ Submission guardada con ID:', savedSubmission._id);
 
-        // 4. Despacho (Mailer) - FIRE AND FORGET (Asíncrono)
-        // No esperamos al mailer para responder al cliente (evita timeout en el widget)
-        console.log('[SubmissionsService] Iniciando despacho de email asíncrono...');
+        // 4. Despacho (Mailer) - AISLAMIENTO TOTAL (Fire and Forget) [cite: 54]
+        // Ejecutamos en segundo plano sin esperar (no await)
+        console.log('[SubmissionsService] Iniciando despacho desacoplado...');
 
-        this.mailService.sendContactEmail(
-            formConfig.email_settings,
-            payload.data,
-            payload.metadata
-        ).then(async (mailResult) => {
-            // Actualizamos la submission una vez termine el mailer (en segundo plano)
-            const submission = await this.submissionModel.findById(savedSubmission._id);
-            if (submission) {
-                submission.mail_log = mailResult;
-                await submission.save();
-                console.log(`[SubmissionsService] Mail_log actualizado para ${savedSubmission._id}:`, mailResult.success ? 'Success' : 'Failed');
+        // Creamos una función autoejecutable o simplemente no esperamos la promesa
+        (async () => {
+            try {
+                const mailResult = await this.mailService.sendContactEmail(
+                    formConfig.email_settings,
+                    payload.data,
+                    payload.metadata
+                );
+
+                // Actualizar el log del mail en la submission guardada
+                const submission = await this.submissionModel.findById(savedSubmission._id);
+                if (submission) {
+                    submission.mail_log = mailResult;
+                    await submission.save();
+                    console.log(`[SubmissionsService] Mail_log actualizado (ID: ${savedSubmission._id})`);
+                }
+            } catch (mailError: any) {
+                console.error('[SubmissionsService] Error en segundo plano (Mail):', mailError.message);
+                // Intentamos guardar el error en el log si es posible
+                await this.submissionModel.findByIdAndUpdate(savedSubmission._id, {
+                    mail_log: { success: false, error: mailError.message, timestamp: new Date().toISOString() }
+                }).catch(() => { });
             }
-        }).catch(async (error) => {
-            console.error('[SubmissionsService] Error fatal en despacho asíncrono:', error.message);
-            const submission = await this.submissionModel.findById(savedSubmission._id);
-            if (submission) {
-                submission.mail_log = {
-                    success: false,
-                    error: error.message,
-                    timestamp: new Date().toISOString()
-                };
-                await submission.save();
-            }
-        });
+        })();
 
         return savedSubmission;
     }

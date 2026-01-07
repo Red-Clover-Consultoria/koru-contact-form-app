@@ -1,6 +1,8 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { EmailSettings } from '../forms/schemas/form.schema';
+import * as sgMail from '@sendgrid/mail';
+import * as net from 'net';
 
 @Injectable()
 export class MailService implements OnModuleInit {
@@ -9,104 +11,122 @@ export class MailService implements OnModuleInit {
     constructor(private readonly mailerService: MailerService) { }
 
     async onModuleInit() {
-        this.logger.log('--- Verificando conexión SMTP (SendGrid) ---');
-        try {
-            // Acceso al transporter subyacente de nodemailer
-            const transporter = (this.mailerService as any).transporter;
-            if (transporter && typeof transporter.verify === 'function') {
-                await transporter.verify();
-                this.logger.log('✅ Conexión SMTP verificada exitosamente.');
-            } else {
-                this.logger.warn('⚠️ No se pudo verificar la conexión SMTP automáticamente.');
-            }
-        } catch (error) {
-            this.logger.error(`❌ Error de conexión SMTP en el arranque: ${error.message}`);
+        this.logger.log('--- Iniciando Diagnóstico de Red (SendGrid) ---');
+
+        // Configurar la API Key para el Fallback
+        const apiKey = process.env.MAIL_PASS;
+        if (apiKey) {
+            sgMail.setApiKey(apiKey);
         }
+
+        // Prueba de conectividad TCP al puerto 465
+        const host = 'smtp.sendgrid.net';
+        const port = 465;
+
+        const socket = net.connect(port, host, () => {
+            this.logger.log(`✅ [PROBE] Conexión TCP exitosa a ${host}:${port}. El puerto está ABIERTO.`);
+            socket.destroy();
+        });
+
+        socket.on('error', (err) => {
+            this.logger.error(`❌ [PROBE] No se pudo conectar a ${host}:${port}. Probable bloqueo de firewall: ${err.message}`);
+        });
+
+        socket.setTimeout(5000, () => {
+            this.logger.warn(`⚠️ [PROBE] Timeout al intentar conectar a ${host}:${port} (5s).`);
+            socket.destroy();
+        });
     }
 
-    // Función principal que el SubmissionsService llamará
+    // Función principal con Fallback SMTP -> HTTP API
     async sendContactEmail(
         emailSettings: EmailSettings,
         formData: Record<string, any>,
         metadata: Record<string, any>,
     ): Promise<any> {
+        this.logger.log('[MailService] Iniciando despacho con estrategia de Fallback...');
 
-        console.log('[MailService] Iniciando envío de email...');
-        console.log('[MailService] Host configurado:', process.env.MAIL_HOST);
-        console.log('[MailService] Port configurado:', process.env.MAIL_PORT);
-        console.log('[MailService] Admin Email (Destino):', emailSettings.admin_email);
+        const clientEmail = this.extractClientEmail(formData);
+        const subject = this.replaceTemplateVariables(emailSettings.subject_line, formData);
 
+        // 1. INTENTO VÍA SMTP (Nodemailer)
         try {
-            // --- 1. Preparación de Variables ---
-            // Extraemos el email del cliente para el Reply-To dinámico
-            let clientEmail = formData['Correo Electrónico']
-                || formData['Correo Electronico']
-                || formData['Email']
-                || formData['email']
-                || formData['correo']
-                || null;
-
-            if (!clientEmail) {
-                const emailField = Object.keys(formData).find(key =>
-                    key.toLowerCase().includes('email') ||
-                    key.toLowerCase().includes('correo') ||
-                    key.toLowerCase().includes('electr')
-                );
-                if (emailField) {
-                    clientEmail = formData[emailField];
-                }
-            }
-
-            // Reemplazo del Título Dinámico: ej. "Nuevo contacto web: {{Name}}"
-            const subject = this.replaceTemplateVariables(emailSettings.subject_line, formData);
-
-            // --- 2. Envío al Administrador (Notificación con Reply-To dinámico) ---
-            console.log('[MailService] Enviando notificación al administrador...');
+            this.logger.log('[STRATEGY: SMTP] Intentando envío por puerto 465...');
             const adminMail = await this.mailerService.sendMail({
                 to: emailSettings.admin_email,
-                subject: `[KORU] ${subject}`,
-                replyTo: clientEmail || undefined, // CRITICAL: Permite responder directamente al cliente
+                subject: `[KORU-SMTP] ${subject}`,
+                replyTo: clientEmail || undefined,
                 template: 'admin_notification',
                 context: {
                     formData: this.formatDataForEmail(formData),
-                    metadata: metadata,
+                    metadata,
                     timestamp: new Date().toLocaleString(),
                     url_origen: metadata.url || 'N/A'
                 },
             });
 
-            // --- 3. Auto-Respuesta al Cliente (Si está activada) ---
-            let clientMail: any = null;
+            // Si hay autoresponder
             if (emailSettings.autoresponder && clientEmail) {
-                console.log('[MailService] Enviando auto-respuesta al cliente:', clientEmail);
-                clientMail = await this.mailerService.sendMail({
+                await this.mailerService.sendMail({
                     to: clientEmail,
                     subject: 'Hemos recibido tu mensaje',
                     template: 'client_autoresponse',
                     context: {
                         clientName: formData['Nombre Completo'] || formData['Nombre'] || 'Estimado cliente',
-                        success_msg: '¡Gracias! Hemos recibido tu consulta y te responderemos a la brevedad.',
+                        success_msg: '¡Gracias! Hemos recibido tu consulta.',
                     },
                 });
             }
 
-            return {
-                success: true,
-                adminMailId: adminMail.messageId,
-                clientMailId: clientMail?.messageId || null
-            };
+            this.logger.log('✅ Envío exitoso vía SMTP.');
+            return { success: true, method: 'SMTP', messageId: adminMail.messageId };
 
-        } catch (error: any) {
-            console.error('[MailService] ❌ Error crítico en envío de email:', error.message);
-            return {
-                success: false,
-                error: error.message,
-                timestamp: new Date().toISOString()
-            };
+        } catch (smtpError: any) {
+            this.logger.warn(`⚠️ Falló SMTP (${smtpError.message}). Iniciando FALLBACK a API HTTP...`);
+
+            // 2. INTENTO VÍA API HTTP (SendGrid SDK)
+            try {
+                const msg = {
+                    to: emailSettings.admin_email,
+                    from: process.env.MAIL_FROM_EMAIL || 'noreply@redclover.com.ar', // Debe estar verificado en SG
+                    replyTo: clientEmail || undefined,
+                    subject: `[KORU-API] ${subject}`,
+                    text: `Nuevo contacto web:\n${JSON.stringify(formData, null, 2)}`,
+                    html: `<h3>Nuevo contacto web</h3><pre>${JSON.stringify(formData, null, 2)}</pre><p>Origen: ${metadata.url}</p>`,
+                };
+
+                const [response] = await sgMail.send(msg);
+
+                // Si hay autoresponder (vía API)
+                if (emailSettings.autoresponder && clientEmail) {
+                    await sgMail.send({
+                        to: clientEmail,
+                        from: process.env.MAIL_FROM_EMAIL || 'noreply@redclover.com.ar',
+                        subject: 'Hemos recibido tu mensaje',
+                        text: 'Gracias por contactarnos. Te responderemos pronto.',
+                        html: '<strong>¡Gracias!</strong> Hemos recibido tu consulta y te responderemos a la brevedad.',
+                    });
+                }
+
+                this.logger.log('✅ Envío exitoso vía API HTTP (Puerto 443).');
+                return { success: true, method: 'API_HTTP', statusCode: response.statusCode };
+
+            } catch (apiError: any) {
+                this.logger.error(`❌ Fallaron ambos métodos. Error API: ${apiError.message}`);
+                return { success: false, error: apiError.message, timestamp: new Date().toISOString() };
+            }
         }
     }
 
-    // Método auxiliar para reemplazar {{variables}} en la cadena
+    private extractClientEmail(formData: Record<string, any>): string | null {
+        let email = formData['Correo Electrónico'] || formData['Email'] || formData['email'] || formData['correo'];
+        if (!email) {
+            const key = Object.keys(formData).find(k => k.toLowerCase().includes('email') || k.toLowerCase().includes('correo'));
+            if (key) email = formData[key];
+        }
+        return email || null;
+    }
+
     private replaceTemplateVariables(template: string, data: Record<string, any>): string {
         let result = template;
         for (const key in data) {
@@ -115,11 +135,7 @@ export class MailService implements OnModuleInit {
         return result;
     }
 
-    // Método auxiliar para transformar el objeto JSON plano en un array para Handlebars
     private formatDataForEmail(data: Record<string, any>): { key: string, value: string }[] {
-        return Object.keys(data).map(key => ({
-            key,
-            value: data[key]
-        }));
+        return Object.keys(data).map(key => ({ key, value: data[key] }));
     }
 }
