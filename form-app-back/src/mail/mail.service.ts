@@ -15,6 +15,8 @@ export class MailService {
 
         console.log('[MailService] Iniciando envío de email...');
         console.log('[MailService] Admin Email:', emailSettings.admin_email);
+        console.log('[MailService] Host configurado:', process.env.MAIL_HOST);
+        console.log('[MailService] Port configurado:', process.env.MAIL_PORT);
         console.log('[MailService] Autoresponder:', emailSettings.autoresponder);
 
         const mailPromises: Promise<any>[] = [];

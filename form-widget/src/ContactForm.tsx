@@ -33,6 +33,7 @@ interface ContactFormProps {
 }
 
 const ContactForm: React.FC<ContactFormProps> = ({ config, websiteId, appId, formId, onClose }) => {
+    console.log('🚀 [KoruWidget] V2.1 Initialized with formId:', formId);
     const [formData, setFormData] = useState<Record<string, any>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -75,6 +76,8 @@ const ContactForm: React.FC<ContactFormProps> = ({ config, websiteId, appId, for
                     _trap: _trap || "", // Backend expects it in metadata
                 },
             };
+
+            console.log('📤 [KoruWidget] Sending Payload:', JSON.stringify(payload, null, 2));
 
             const response = await fetch('https://koru-contact-form-app-production.up.railway.app/api/forms/submit', {
                 method: 'POST',

@@ -13,7 +13,7 @@ class ContactFormWidget extends KoruWidget {
             version: '1.0.0',
             options: { debug: true, cache: true }
         });
-        console.log('[ContactFormWidget] Instance created');
+        console.log('📦 [ContactFormWidget] V2.1 Bundle Active');
     }
 
     async start(): Promise<void> {
