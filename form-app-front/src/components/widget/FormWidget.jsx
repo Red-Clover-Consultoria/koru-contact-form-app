@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 import useFormStore from '../../stores/useFormStore';
 
-const FormWidget = ({ formId, token, isPreview = false }) => {
+const FormWidget = ({ formId, websiteId, token, isPreview = false }) => {
     const { fetchConfig } = useFormStore();
     const [config, setConfig] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -70,7 +70,7 @@ const FormWidget = ({ formId, token, isPreview = false }) => {
         try {
             const payload = {
                 formId: formId,
-                website_id: window.location.hostname,  // Use underscore to match backend DTO
+                website_id: websiteId || window.location.hostname, // Prioritize prop, fallback to hostname
                 data: formData,
                 metadata: {
                     _trap: '', // Honeypot inside metadata
@@ -81,7 +81,7 @@ const FormWidget = ({ formId, token, isPreview = false }) => {
 
             // Use activeToken (synced from either prop or config response)
             const headers = activeToken ? { 'X-Koru-Token': activeToken } : {};
-            await api.post('/api/forms/submit', payload, { headers });
+            await api.post('/forms/submit', payload, { headers });
             setStatus('success');
 
             // Handle success message or redirect

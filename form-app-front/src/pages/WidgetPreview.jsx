@@ -8,12 +8,13 @@ const WidgetPreview = () => {
     // Obtener el token de los query params (?token=...)
     const queryParams = new URLSearchParams(location.search);
     const token = queryParams.get('token');
+    const websiteId = queryParams.get('websiteId');
 
     return (
         <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
 
-            {/* Render the widget with formId and token */}
-            <FormWidget formId={formId} token={token} isPreview={true} />
+            {/* Render the widget with formId, websiteId and token */}
+            <FormWidget formId={formId} websiteId={websiteId} token={token} isPreview={true} />
         </div>
     );
 };
