@@ -14,8 +14,8 @@ import { join } from 'path';
                 // Usamos SMTP para la conexión (Compatible con SendGrid, Mailgun, etc.)
                 transport: {
                     host: configService.get<string>('MAIL_HOST'),
-                    port: configService.get<number>('MAIL_PORT'),
-                    secure: configService.get<number>('MAIL_PORT') === 465,
+                    port: 465, // Puerto SSL Recomendado
+                    secure: true, // Forzar SSL
                     auth: {
                         user: configService.get<string>('MAIL_USER'),
                         pass: configService.get<string>('MAIL_PASS'),
