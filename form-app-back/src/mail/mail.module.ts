@@ -24,6 +24,9 @@ import { join } from 'path';
                     connectionTimeout: 10000, // 10s
                     greetingTimeout: 10000,
                     socketTimeout: 10000,
+                    tls: {
+                        rejectUnauthorized: false, // Descartar problemas de certificados en prod
+                    },
                 },
                 defaults: {
                     from: `"Koru Contact Form" <${configService.get<string>('MAIL_FROM_EMAIL')}>`,
