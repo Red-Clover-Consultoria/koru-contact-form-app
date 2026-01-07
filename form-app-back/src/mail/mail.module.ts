@@ -15,17 +15,17 @@ import { join } from 'path';
                 transport: {
                     host: configService.get<string>('MAIL_HOST'),
                     port: configService.get<number>('MAIL_PORT'),
-                    secure: configService.get<number>('MAIL_PORT') === 465, // true para 465 (SSL), false para 587 (STARTTLS)
+                    secure: configService.get<number>('MAIL_PORT') === 465,
                     auth: {
                         user: configService.get<string>('MAIL_USER'),
                         pass: configService.get<string>('MAIL_PASS'),
                     },
-                    // Configuraciones de Timeout para evitar ETIMEDOUT en Railway
-                    connectionTimeout: 10000, // 10s
+                    pool: true, // Usar conexiones persistentes para mejorar performance
+                    connectionTimeout: 10000,
                     greetingTimeout: 10000,
                     socketTimeout: 10000,
                     tls: {
-                        rejectUnauthorized: false, // Descartar problemas de certificados en prod
+                        rejectUnauthorized: false,
                     },
                 },
                 defaults: {

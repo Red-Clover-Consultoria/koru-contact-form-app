@@ -1,10 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { EmailSettings } from '../forms/schemas/form.schema';
 
 @Injectable()
-export class MailService {
+export class MailService implements OnModuleInit {
+    private readonly logger = new Logger('MailService');
+
     constructor(private readonly mailerService: MailerService) { }
+
+    async onModuleInit() {
+        this.logger.log('--- Verificando conexión SMTP (SendGrid) ---');
+        try {
+            // Acceso al transporter subyacente de nodemailer
+            const transporter = (this.mailerService as any).transporter;
+            if (transporter && typeof transporter.verify === 'function') {
+                await transporter.verify();
+                this.logger.log('✅ Conexión SMTP verificada exitosamente.');
+            } else {
+                this.logger.warn('⚠️ No se pudo verificar la conexión SMTP automáticamente.');
+            }
+        } catch (error) {
+            this.logger.error(`❌ Error de conexión SMTP en el arranque: ${error.message}`);
+        }
+    }
 
     // Función principal que el SubmissionsService llamará
     async sendContactEmail(
