@@ -58,7 +58,7 @@ export class MailService {
             });
 
             // --- 3. Auto-Respuesta al Cliente (Si está activada) ---
-            let clientMail = null;
+            let clientMail: any = null;
             if (emailSettings.autoresponder && clientEmail) {
                 console.log('[MailService] Enviando auto-respuesta al cliente:', clientEmail);
                 clientMail = await this.mailerService.sendMail({
