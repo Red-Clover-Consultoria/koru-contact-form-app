@@ -28,10 +28,11 @@ interface ContactFormProps {
     config: FormConfig;
     websiteId: string;
     appId: string;
+    formId: string;
     onClose?: () => void;
 }
 
-const ContactForm: React.FC<ContactFormProps> = ({ config, websiteId, appId, onClose }) => {
+const ContactForm: React.FC<ContactFormProps> = ({ config, websiteId, appId, formId, onClose }) => {
     const [formData, setFormData] = useState<Record<string, any>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -48,19 +49,30 @@ const ContactForm: React.FC<ContactFormProps> = ({ config, websiteId, appId, onC
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (formData._trap) return; // Honeypot
+
+        // Honeypot check (Double validation: frontend block and backend metadata)
+        if (formData._trap && formData._trap.length > 0) {
+            console.warn('[Honeypot] Submission blocked locally');
+            setIsSuccess(true); // Silent discard for the bot
+            return;
+        }
 
         setIsSubmitting(true);
         setError(null);
 
         try {
+            // Reconstruct payload according to backend specification
+            const { _trap, ...cleanData } = formData;
+
             const payload = {
+                formId: formId, // CRITICAL: Missing in original code
                 app_id: appId,
                 website_id: websiteId,
-                data: formData,
+                data: cleanData,
                 metadata: {
                     url: window.location.href,
                     user_agent: navigator.userAgent,
+                    _trap: _trap || "", // Backend expects it in metadata
                 },
             };
 
@@ -70,17 +82,22 @@ const ContactForm: React.FC<ContactFormProps> = ({ config, websiteId, appId, onC
                 body: JSON.stringify(payload),
             });
 
-            if (!response.ok) throw new Error('Submission failed');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Error al enviar el formulario (400)');
+            }
 
             setIsSuccess(true);
+            setFormData({}); // Reset form
+
             if (config.layout_settings.redirect_url) {
                 setTimeout(() => {
                     window.location.href = config.layout_settings.redirect_url!;
                 }, 2000);
             }
-        } catch (err) {
-            console.error(err);
-            setError("Error al enviar. Intente nuevamente.");
+        } catch (err: any) {
+            console.error('[Submit Error]', err);
+            setError(err.message || "Error al enviar. Intente de nuevo.");
         } finally {
             setIsSubmitting(false);
         }
@@ -194,6 +211,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ config, websiteId, appId, onC
         <div style={styles.container}>
             <style>{`
         @keyframes koru-fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes koru-spin { to { transform: rotate(360deg); } }
         .koru-field:focus { border-color: ${accentColor} !important; }
       `}</style>
 
@@ -249,11 +267,32 @@ const ContactForm: React.FC<ContactFormProps> = ({ config, websiteId, appId, onC
 
                         <input type="text" name="_trap" style={{ display: 'none' }} onChange={e => handleChange('_trap', e.target.value)} />
 
-                        {error && <p style={{ color: '#ef4444', fontSize: '12px', marginBottom: '16px' }}>{error}</p>}
+                        {error && (
+                            <div style={{ color: '#ef4444', fontSize: '13px', marginBottom: '16px', padding: '10px', backgroundColor: '#fef2f2', borderRadius: '6px', border: '1px solid #fee2e2' }}>
+                                {error}
+                            </div>
+                        )}
 
-                        <button type="submit" disabled={isSubmitting} style={{ ...styles.button, opacity: isSubmitting ? 0.7 : 1 }}>
-                            {isSubmitting ? 'Enviando...' : config.layout_settings.submit_text}
-                            {!isSubmitting && <Send size={16} />}
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            style={{
+                                ...styles.button,
+                                opacity: isSubmitting ? 0.7 : 1,
+                                cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <div style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'koru-spin 0.8s linear infinite' }}></div>
+                                    <span>Enviando...</span>
+                                </>
+                            ) : (
+                                <>
+                                    {config.layout_settings.submit_text}
+                                    <Send size={16} />
+                                </>
+                            )}
                         </button>
                     </form>
                 </div>

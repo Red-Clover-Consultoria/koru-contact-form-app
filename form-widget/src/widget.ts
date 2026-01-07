@@ -76,7 +76,8 @@ class ContactFormWidget extends KoruWidget {
                 React.createElement(ContactForm, {
                     config: this.formConfig,
                     websiteId: this.authData.website.id,
-                    appId: this.authData.app.id
+                    appId: this.authData.app.id,
+                    formId: this.formConfig.formId
                 })
             )
         );
