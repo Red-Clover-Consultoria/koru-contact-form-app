@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koru Widget Local Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f9fafb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 600px;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        h1 {
+            color: #111827;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: #4b5563;
+            line-height: 1.5;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #e0e7ff;
+            color: #4338ca;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <span class="badge">Local Environment Test</span>
+        <h1>Koru Contact Form Widget</h1>
+        <p>This page uses your local build (<code>dist/index.js</code>) with real production data to verify the fixes.
+        </p>
+    </div>
+
+    <!-- Contenedor del Widget -->
+    <div class="koru-contact-form" data-form-id="koru-h08xo1zvs"></div>
+
+    <!-- Koru SDK & Widget Script (Local Build) -->
+    <script src="./dist/index.js" data-website-id="50dc4ac0-4eae-4f45-80d5-c30bf4520662"
+        data-app-id="efc7cd83-aa52-4f3a-b803-4aec7d3be35d" data-custom-data="koru-h08xo1zvs"
+        data-api-url="https://koru-contact-form-app-production.up.railway.app/api"
+        data-app-manager-url="https://app-manager.vercel.app" async></script>
+
+    <!-- Original User Script (Commented for reference)
+    <script 
+      src="https://koru-form-7yyoou5yk-karens-projects-c3e39980.vercel.app/index.js" 
+      data-website-id="50dc4ac0-4eae-4f45-80d5-c30bf4520662" 
+      data-app-id="efc7cd83-aa52-4f3a-b803-4aec7d3be35d" 
+      data-custom-data="koru-h08xo1zvs"
+      data-api-url="https://koru-contact-form-app-production.up.railway.app/api"
+      data-app-manager-url="https://app-manager.vercel.app"
+      async
+    ></script>
+    -->
+</body>
+
+</html>
