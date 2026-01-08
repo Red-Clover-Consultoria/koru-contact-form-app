@@ -87,15 +87,23 @@ const Layout = () => {
             </aside>
 
             {/* Mobile Header */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 z-40 shadow-sm">
-                <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">Koru Forms</span>
-                <button
-                    onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
-                >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
-                </button>
-            </div>
+            <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 z-40 transition-all duration-200">
+                <div className="flex items-center space-x-3">
+                    <button
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        className="p-2 -ml-2 rounded-xl text-gray-500 hover:bg-gray-100/50 hover:text-[#00C896] transition-colors active:scale-95"
+                        aria-label="Toggle Menu"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                    </button>
+                    <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-[#00C896] to-emerald-600 tracking-tight">Koru Forms</span>
+                </div>
+
+                {/* Mobile Profile Icon (Optional, keeping it simple as requested) */}
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00C896] to-emerald-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                    {user?.name?.charAt(0) || 'U'}
+                </div>
+            </header>
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col overflow-hidden relative">

@@ -128,12 +128,24 @@ const FormBuilder = () => {
                 </div>
             </div>
 
-            {/* Main Workspace */}
-            <div className="flex flex-1 overflow-hidden h-[calc(100vh-73px)]">
-                {/* Configuration Sidebar */}
-                <div className="w-80 bg-white border-r border-gray-200 flex flex-col z-10">
+            {/* Main Workspace - Responsive Layout */}
+            <div className="flex flex-col lg:flex-row flex-1 overflow-hidden lg:h-[calc(100vh-73px)] relative">
+
+                {/* Mobile Preview Toggle (Floating) */}
+                <button
+                    className="lg:hidden fixed bottom-6 right-6 z-50 bg-[#00C896] text-white p-3 rounded-full shadow-lg shadow-emerald-500/30 active:scale-90 transition-transform"
+                    onClick={() => {
+                        const previewEl = document.getElementById('mobile-preview-area');
+                        if (previewEl) previewEl.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                </button>
+
+                {/* Configuration Sidebar / Editor Area */}
+                <div className="w-full lg:w-80 bg-white border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col z-10 h-[60vh] lg:h-full lg:flex-none order-2 lg:order-1">
                     {/* Tabs Header */}
-                    <div className="flex border-b border-gray-100">
+                    <div className="flex border-b border-gray-100 shrink-0">
                         <button
                             onClick={() => setActiveTab('fields')}
                             className={`flex-1 py-4 text-sm font-medium text-center transition-colors relative ${activeTab === 'fields' ? 'text-[#00C896]' : 'text-gray-500 hover:text-gray-700'
@@ -169,7 +181,7 @@ const FormBuilder = () => {
                     {/* Tab Content */}
                     <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
 
-                        {/* Title Input (Always visible or part of Fields?) -> Let's keep it in Fields or Top */}
+                        {/* Title Input */}
                         {activeTab === 'fields' && (
                             <div className="mb-6">
                                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Nombre del Formulario</label>
@@ -205,31 +217,45 @@ const FormBuilder = () => {
                 </div>
 
                 {/* Live Preview Area */}
-                <div className="flex-1 bg-gray-50 relative flex items-center justify-center overflow-hidden">
-                    <div className="absolute top-4 left-0 right-0 text-center z-0">
-                        <span className="bg-white/50 backdrop-blur px-3 py-1 rounded-full text-xs font-mono text-gray-400 border border-gray-100">
-                            Vista Previa
+                <div id="mobile-preview-area" className="flex-1 bg-gray-100/50 relative flex items-center justify-center overflow-hidden lg:overflow-visible min-h-[500px] lg:min-h-0 order-1 lg:order-2">
+                    <div className="absolute top-6 left-0 right-0 text-center z-0 pointer-events-none">
+                        <span className="bg-white/80 backdrop-blur px-4 py-1.5 rounded-full text-xs font-semibold text-gray-500 shadow-sm border border-gray-200 uppercase tracking-widest">
+                            Vista Previa en Tiempo Real
                         </span>
                     </div>
 
                     {/* Background Pattern */}
-                    <div className="absolute inset-0 z-0 opacity-[0.03]"
-                        style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
+                    <div className="absolute inset-0 z-0 opacity-[0.04] pointer-events-none"
+                        style={{ backgroundImage: 'radial-gradient(#64748b 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
                     </div>
 
-                    {/* Simulation Container */}
-                    <div className="w-full h-full relative transform translate-0 overflow-auto flex items-center justify-center p-8">
-                        {/* We use a transformative container to prevent fixed elements from escaping 'preview' logic if implemented correctly in child,
-                            but since FormWidget uses 'fixed', we rely on it being context-aware or just letting it float in this 'iframe-like' box.
-                            For now, we place it here.
-                        */}
-                        <FormWidget
-                            formId={formData.formId}
-                            websiteId={user?.websites?.[0]}
-                            token={null}
-                            config={formData}
-                            isPreview={true}
-                        />
+                    {/* Simulation Container (Card/Device Look) */}
+                    <div className="relative z-10 w-full max-w-md mx-6 animate-in fade-in zoom-in duration-300">
+                        {/* Browser Window / Card Header */}
+                        <div className="bg-white rounded-t-xl shadow-lg border-b border-gray-100 p-4 flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                                <div className="w-3 h-3 rounded-full bg-red-400/80"></div>
+                                <div className="w-3 h-3 rounded-full bg-yellow-400/80"></div>
+                                <div className="w-3 h-3 rounded-full bg-green-400/80"></div>
+                            </div>
+                            <div className="text-xs font-medium text-gray-400">Preview</div>
+                            <div className="w-12"></div> {/* Spacer for center alignment */}
+                        </div>
+
+                        {/* Form Content */}
+                        <div className="bg-white rounded-b-xl shadow-xl p-6 min-h-[400px] border border-gray-100">
+                            <h4 className="text-xl font-bold text-gray-800 mb-6">{formData.title || 'Formulario de Contacto'}</h4>
+
+                            <div className="koru-form-preview-wrapper opacity-95"> {/* Slight opacity to blend if needed, or stick to 100 */}
+                                <FormWidget
+                                    formId={formData.formId}
+                                    websiteId={user?.websites?.[0]}
+                                    token={null}
+                                    config={formData}
+                                    isPreview={true}
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

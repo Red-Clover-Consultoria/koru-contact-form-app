@@ -29,7 +29,7 @@ const Login = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 font-sans">
-            <div className="w-full max-w-md p-10 bg-white rounded-2xl shadow-sm border border-gray-100">
+            <div className="w-full max-w-md p-6 md:p-10 bg-white rounded-2xl shadow-sm border border-gray-100">
                 <div className="text-center mb-8">
                     <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
                         <span className="text-[#00C896]">Koru</span> Forms

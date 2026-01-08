@@ -1,12 +1,13 @@
 
 
+
 const SectionFields = ({ fields, onChange }) => {
 
     const addField = () => {
         const newField = {
             id: `field_${Date.now()}`,
             type: 'text',
-            label: 'New Field',
+            label: 'Nuevo Campo',
             required: false,
             width: '100%',
             options: '', // for select inputs
@@ -21,10 +22,8 @@ const SectionFields = ({ fields, onChange }) => {
     };
 
     const removeField = (index) => {
-        if (window.confirm('Delete this field?')) {
-            const newFields = fields.filter((_, i) => i !== index);
-            onChange(newFields);
-        }
+        const newFields = fields.filter((_, i) => i !== index);
+        onChange(newFields);
     };
 
     const moveField = (index, direction) => {
@@ -40,145 +39,147 @@ const SectionFields = ({ fields, onChange }) => {
     };
 
     return (
-        <div className="space-y-6 max-w-4xl">
-            <div className="flex justify-between items-center">
-                <div>
-                        <h3 className="text-lg font-medium text-gray-900">Campos del formulario</h3>
-                        <p className="text-sm text-gray-500">Añade y configura los campos para tu formulario.</p>
-                </div>
-                <button
-                    onClick={addField}
-                        className="px-4 py-2 bg-primary text-white rounded-md hover:opacity-90 shadow flex items-center"
-                >
-                    <span className="mr-2">+</span> Add Field
-                </button>
+        <div className="space-y-6">
+            <div className="flex justify-between items-center mb-4">
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Campos del Formulario</h3>
+                <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">{fields.length} campos</span>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
                 {fields.length === 0 && (
-                    <div className="text-center py-8 bg-gray-50 border border-dashed border-gray-300 rounded-lg">
-                        <p className="text-gray-500">No hay campos añadidos aún.</p>
+                    <div className="text-center py-12 px-4 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer" onClick={addField}>
+                        <div className="mb-3 text-gray-400">
+                            <svg className="w-10 h-10 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                        </div>
+                        <p className="text-sm font-medium text-gray-500">Tu formulario está vacío</p>
+                        <p className="text-xs text-gray-400 mt-1">Haz clic para añadir tu primer campo</p>
                     </div>
                 )}
 
                 {fields.map((field, index) => (
-                    <div key={field.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm relative transition hover:shadow-md">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="flex items-center space-x-2">
-                                <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-mono">
-                                    {field.type}
-                                </span>
-                                <span className="font-semibold text-gray-700">{field.label}</span>
-                                {field.required && <span className="text-red-500 text-xs">*Obl.</span>}
+                    <div key={field.id} className="group bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200">
+                        {/* Header Row */}
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-3 overflow-hidden">
+                                <div className="cursor-move text-gray-300 hover:text-gray-500 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-800 truncate">{field.label || 'Sin etiqueta'}</p>
+                                    <p className="text-[10px] text-gray-400 font-mono uppercase tracking-wider">{field.type}</p>
+                                </div>
                             </div>
 
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                 <button
                                     onClick={() => moveField(index, 'up')}
                                     disabled={index === 0}
-                                    className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                                    title="Subir"
+                                    className="p-1.5 text-gray-400 hover:text-[#00C896] hover:bg-[#E6F8F3] rounded-lg disabled:opacity-20 transition-all"
                                 >
-                                    ↑
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" /></svg>
                                 </button>
                                 <button
                                     onClick={() => moveField(index, 'down')}
                                     disabled={index === fields.length - 1}
-                                    className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                                    title="Bajar"
+                                    className="p-1.5 text-gray-400 hover:text-[#00C896] hover:bg-[#E6F8F3] rounded-lg disabled:opacity-20 transition-all"
                                 >
-                                    ↓
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                                 </button>
+                                <div className="w-px h-4 bg-gray-200 mx-1"></div>
                                 <button
                                     onClick={() => removeField(index)}
-                                    className="text-red-500 hover:text-red-700 ml-2"
-                                        title="Eliminar"
+                                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                                 >
-                                    ×
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                 </button>
                             </div>
                         </div>
 
-                        {/* Editor Row */}
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 bg-gray-50 p-3 rounded-md">
-                            <div className="md:col-span-3">
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Etiqueta</label>
+                        {/* Editor Inputs */}
+                        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-50">
+                            <div className="col-span-2">
                                 <input
                                     type="text"
                                     value={field.label}
                                     onChange={(e) => updateField(index, { label: e.target.value })}
-                                    className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs border px-2 py-1"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm text-gray-700 focus:bg-white focus:ring-1 focus:ring-[#00C896] focus:border-[#00C896] outline-none transition-all placeholder-gray-400"
+                                    placeholder="Etiqueta del campo"
                                 />
                             </div>
 
-                            <div className="md:col-span-2">
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Tipo</label>
+                            <div>
                                 <select
                                     value={field.type}
                                     onChange={(e) => updateField(index, { type: e.target.value })}
-                                    className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs border px-2 py-1"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm text-gray-600 focus:bg-white focus:ring-1 focus:ring-[#00C896] focus:border-[#00C896] outline-none transition-all"
                                 >
                                     <option value="text">Texto</option>
-                                    <option value="email">Correo</option>
-                                    <option value="textarea">Área de texto</option>
+                                    <option value="email">Email</option>
+                                    <option value="textarea">Área Texto</option>
                                     <option value="number">Número</option>
-                                    <option value="select">Seleccionar</option>
-                                    <option value="checkbox">Casilla</option>
+                                    <option value="select">Selección</option>
                                 </select>
                             </div>
 
-                            <div className="md:col-span-2">
-                                <label className="block text-xs font-medium text-gray-500 mb-1">ID (Clave)</label>
-                                <input
-                                    type="text"
-                                    value={field.id} // Not ideal to edit ID if used as key, but helpful for custom keys
-                                    onChange={(e) => updateField(index, { id: e.target.value })}
-                                    className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs border px-2 py-1"
-                                />
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Ancho</label>
+                            <div>
                                 <select
                                     value={field.width}
                                     onChange={(e) => updateField(index, { width: e.target.value })}
-                                    className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs border px-2 py-1"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm text-gray-600 focus:bg-white focus:ring-1 focus:ring-[#00C896] focus:border-[#00C896] outline-none transition-all"
                                 >
-                                    <option value="100%">100%</option>
-                                    <option value="50%">50%</option>
+                                    <option value="100%">Ancho 100%</option>
+                                    <option value="50%">Ancho 50%</option>
                                 </select>
                             </div>
 
-                            <div className="md:col-span-1 flex items-center justify-center pt-4">
-                                <label className="flex items-center space-x-2">
+                            {field.type === 'select' && (
+                                <div className="col-span-2">
                                     <input
-                                        type="checkbox"
-                                        checked={field.required}
-                                        onChange={(e) => updateField(index, { required: e.target.checked })}
-                                        className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                        type="text"
+                                        value={field.options}
+                                        onChange={(e) => updateField(index, { options: e.target.value })}
+                                        className="w-full px-3 py-2 bg-yellow-50 border border-yellow-100 rounded-lg text-sm text-gray-700 focus:bg-white focus:ring-1 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all"
+                                        placeholder="Opciones: Opción A, Opción B..."
                                     />
-                                    <span className="text-xs text-gray-700">Obl.</span>
+                                </div>
+                            )}
+
+                            <div className="col-span-2 flex items-center mt-1">
+                                <label className="flex items-center cursor-pointer group/check">
+                                    <div className="relative">
+                                        <input
+                                            type="checkbox"
+                                            className="sr-only"
+                                            checked={field.required}
+                                            onChange={(e) => updateField(index, { required: e.target.checked })}
+                                        />
+                                        <div className={`w-4 h-4 border rounded transition-colors ${field.required ? 'bg-[#00C896] border-[#00C896]' : 'border-gray-300 bg-white'}`}></div>
+                                        {field.required && (
+                                            <svg className="absolute top-0.5 left-0.5 w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                                        )}
+                                    </div>
+                                    <span className={`ml-2 text-xs font-medium transition-colors ${field.required ? 'text-[#00C896]' : 'text-gray-500 group-hover/check:text-gray-700'}`}>
+                                        Marcar como obligatorio
+                                    </span>
                                 </label>
                             </div>
                         </div>
-
-                        {field.type === 'select' && (
-                            <div className="mt-2">
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Opciones (separadas por comas)</label>
-                                <input
-                                    type="text"
-                                    value={field.options}
-                                    onChange={(e) => updateField(index, { options: e.target.value })}
-                                    className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs border px-2 py-1"
-                                    placeholder="Opción 1, Opción 2, Opción 3"
-                                />
-                            </div>
-                        )}
                     </div>
                 ))}
             </div>
+
+            <button
+                onClick={addField}
+                className="w-full py-3 bg-gray-50 hover:bg-[#E6F8F3] hover:text-[#00C896] border border-dashed border-gray-300 hover:border-[#00C896] rounded-xl text-gray-500 font-medium text-sm transition-all flex items-center justify-center space-x-2 group mt-4"
+            >
+                <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+                <span>Añadir Nuevo Campo</span>
+            </button>
         </div>
     );
 };
 
 export default SectionFields;
+
+
+

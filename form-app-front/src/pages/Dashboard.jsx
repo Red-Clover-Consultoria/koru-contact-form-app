@@ -140,13 +140,13 @@ const Dashboard = () => {
                                     <th scope="col" className="px-6 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                         Título del Form
                                     </th>
-                                    <th scope="col" className="px-6 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                    <th scope="col" className="hidden md:table-cell px-6 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                         ID Único
                                     </th>
-                                    <th scope="col" className="px-6 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                    <th scope="col" className="hidden md:table-cell px-6 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                         Estado de Salud
                                     </th>
-                                    <th scope="col" className="px-6 py-5 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                    <th scope="col" className="hidden md:table-cell px-6 py-5 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">
                                         Websites
                                     </th>
                                     <th scope="col" className="px-6 py-5 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">
@@ -176,10 +176,10 @@ const Dashboard = () => {
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm font-medium text-gray-900">{form.title}</div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
+                                            <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded w-fit text-xs">{form.formId}</div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
+                                            <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center">
                                                     {isDeleted ? (
                                                         <div className="flex items-center text-xs font-medium text-gray-500">
@@ -201,7 +201,7 @@ const Dashboard = () => {
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                            <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
                                                 {websitesCount}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
