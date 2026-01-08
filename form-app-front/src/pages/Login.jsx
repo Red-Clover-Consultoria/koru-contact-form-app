@@ -32,7 +32,7 @@ const Login = () => {
             <div className="w-full max-w-md p-10 bg-white rounded-2xl shadow-sm border border-gray-100">
                 <div className="text-center mb-8">
                     <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-                        Koru Forms
+                        <span className="text-[#00C896]">Koru</span> Forms
                     </h1>
                     <p className="text-gray-500 mt-2 text-sm">Welcome back</p>
                 </div>
@@ -51,7 +51,7 @@ const Login = () => {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black/5 focus:border-gray-400 focus:bg-white transition-all text-gray-900 placeholder-gray-400 text-sm"
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00C896]/20 focus:border-[#00C896] focus:bg-white transition-all text-gray-900 placeholder-gray-400 text-sm"
                             placeholder="name@company.com"
                         />
                     </div>
@@ -62,7 +62,7 @@ const Login = () => {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black/5 focus:border-gray-400 focus:bg-white transition-all text-gray-900 placeholder-gray-400 text-sm"
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00C896]/20 focus:border-[#00C896] focus:bg-white transition-all text-gray-900 placeholder-gray-400 text-sm"
                             placeholder="••••••••"
                         />
                     </div>
@@ -70,7 +70,7 @@ const Login = () => {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full py-3 mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-sm transform transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                        className="w-full py-3 mt-4 bg-[#00C896] hover:bg-[#00A080] text-white font-medium rounded-lg shadow-sm transform transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                     >
                         {isLoading ? (
                             <div className="flex items-center justify-center">

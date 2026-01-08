@@ -7,7 +7,7 @@ export default {
     theme: {
         extend: {
             colors: {
-                primary: '#10B981', // verde
+                primary: '#00C896', // Koru Green
                 secondary: '#06B6D4' // turquesa
             }
         },
