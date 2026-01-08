@@ -226,13 +226,13 @@ export class FormsService {
         let disabledFormsCount = 0;
         let invalidSitesCount = 0;
         const KORU_API_URL = this.configService.get('KORU_API_URL') || 'https://www.korusuite.com/api';
-        const KORU_APP_ID = this.configService.get('KORU_APP_ID');
+        const KORU_APP_ID = this.KORU_APP_ID;
         const KORU_APP_SECRET = this.configService.get('KORU_APP_SECRET');
 
         for (const websiteId of websiteIds) {
             try {
                 // Verificar existencia del sitio usando credenciales de APP (M2M)
-                await firstValueFrom(
+                const response = await firstValueFrom(
                     this.httpService.get(`${KORU_API_URL}/websites/${websiteId}`, {
                         headers: {
                             'X-App-ID': KORU_APP_ID,
@@ -240,24 +240,42 @@ export class FormsService {
                         }
                     })
                 );
-                // Si responde 200, el sitio existe y la app tiene acceso -> Todo OK
-                // Reactivamos formularios que pudieron haber sido desactivados temporalmente
-                await this.formModel.updateMany(
-                    { website_id: websiteId, isActive: false },
-                    { isActive: true }
-                );
+
+                // Si responde 200, el sitio existe. 
+                // Opcional: Podríamos validar si el sitio está explícitamente "active" en la respuesta de Koru
+                const websiteData = response.data;
+                const isKoruActive = websiteData?.status === 'active' || websiteData?.isActive === true || true;
+
+                if (isKoruActive) {
+                    // Reactivamos formularios que pudieron haber sido desactivados temporalmente
+                    await this.formModel.updateMany(
+                        { website_id: websiteId, isActive: false },
+                        { isActive: true }
+                    );
+                } else {
+                    throw { response: { status: 404 } }; // Tratar como inactivo si Koru dice que está deshabilitado
+                }
 
             } catch (error) {
-                // Si falla (404 Not Found, 403 Forbidden, etc), asumimos sitio inválido/inactivo
-                const result = await this.formModel.updateMany(
-                    { website_id: websiteId, isActive: true },
-                    { isActive: false }
-                );
+                const status = error.response?.status;
 
-                if (result.modifiedCount > 0) {
-                    disabledFormsCount += result.modifiedCount;
-                    invalidSitesCount++;
-                    console.warn(`[Cron Job] WebsiteID ${websiteId} inválido/inactivo en Koru. ${result.modifiedCount} formularios desactivados.`);
+                // SOLUCIÓN QUIRÚRGICA: Solo desactivamos si es un 404 real (No existe)
+                // Si es un 401/403/500, hay un problema de comunicación o credenciales, 
+                // PERO no debemos castigar al usuario desactivando su formulario.
+                if (status === 404) {
+                    const result = await this.formModel.updateMany(
+                        { website_id: websiteId, isActive: true },
+                        { isActive: false }
+                    );
+
+                    if (result.modifiedCount > 0) {
+                        disabledFormsCount += result.modifiedCount;
+                        invalidSitesCount++;
+                        console.warn(`[Cron Job] WebsiteID ${websiteId} inactivo/eliminado en Koru (404). ${result.modifiedCount} formularios desactivados.`);
+                    }
+                } else {
+                    // Logueamos el error pero mantenemos la persistencia del estado actual
+                    console.error(`[Cron Job] Error al validar WebsiteID ${websiteId}: Status ${status || 'Unknown'}. Se mantiene el estado actual para evitar desactivación errónea.`);
                 }
             }
         }
