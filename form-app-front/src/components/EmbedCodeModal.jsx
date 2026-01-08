@@ -22,7 +22,16 @@ const EmbedCodeModal = ({ isOpen, onClose, formId, websiteId, appId }) => {
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(embedCode);
-        alert('¡Código copiado al portapapeles!');
+        import('sweetalert2').then(Swal => {
+            Swal.default.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Code copied to clipboard',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        });
     };
 
     return (

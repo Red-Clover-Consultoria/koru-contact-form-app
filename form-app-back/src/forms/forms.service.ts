@@ -152,7 +152,7 @@ export class FormsService {
         return updatedForm;
     }
 
-    // 6. DELETE: Eliminar un formulario
+    // 6. DELETE: Soft Delete (Eliminación lógica) para conservar historial
     async remove(formId: string, authorizedWebsites?: string[]): Promise<any> {
         if (!Types.ObjectId.isValid(formId)) {
             throw new BadRequestException('ID de formulario inválido.');
@@ -163,9 +163,10 @@ export class FormsService {
             query.website_id = { $in: authorizedWebsites };
         }
 
-        const result = await this.formModel.deleteOne(query).exec();
+        // Soft Delete: Marcar como eliminado pero mantener el registro
+        const result = await this.formModel.updateOne(query, { isDeleted: true }).exec();
 
-        if (result.deletedCount === 0) {
+        if (result.modifiedCount === 0) {
             throw new NotFoundException(`Formulario no encontrado o acceso denegado.`);
         }
         return { deleted: true, formId };

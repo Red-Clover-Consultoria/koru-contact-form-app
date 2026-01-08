@@ -28,11 +28,12 @@ const FormWidget = ({ formId, websiteId, token, isPreview = false, config: direc
             }
             setFormData(prev => ({ ...initialData, ...prev })); // Merge to keep existing input if possible
 
-            // Auto-open logic for Builder if needed? 
-            // Maybe better to NOT auto-open in builder every time config changes to avoid annoyance.
-            // But if display_type changes to inline, we must show it.
+            // Auto-open logic for Builder
+            // If Inline, it must be open. If Floating/Popup, start closed (bubble) to show the button.
             if (directConfig.layout_settings?.display_type === 'Inline') {
                 setIsOpen(true);
+            } else {
+                setIsOpen(false);
             }
         }
     }, [directConfig]);

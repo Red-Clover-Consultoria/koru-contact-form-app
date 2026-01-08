@@ -1,47 +1,103 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../stores/useAuthStore';
+import { useState } from 'react';
 
 const Layout = () => {
     const { user, logout } = useAuthStore();
     const navigate = useNavigate();
+    const location = useLocation();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const handleLogout = () => {
         logout();
         navigate('/login');
     };
 
+    const isActive = (path) => location.pathname === path;
+
     return (
-        <div className="flex flex-col min-h-screen bg-white">
-            <nav className="bg-white border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16">
-                        <div className="flex">
-                            <div className="flex-shrink-0 flex items-center">
-                                <Link to="/dashboard" className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-                                        Koru Forms
-                                </Link>
-                            </div>
+        <div className="flex h-screen bg-gray-50 font-sans">
+            {/* Sidebar */}
+            <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-100 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                {/* Logo Area */}
+                <div className="flex items-center justify-center h-20 border-b border-gray-50">
+                    <Link to="/dashboard" className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">
+                        Koru Forms
+                    </Link>
+                </div>
+
+                {/* Navigation */}
+                <nav className="p-4 space-y-2 mt-4">
+                    <Link
+                        to="/dashboard"
+                        className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${isActive('/dashboard')
+                            ? 'bg-indigo-50 text-indigo-700 shadow-sm'
+                            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                    >
+                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                        Dashboard
+                    </Link>
+
+                    <Link
+                        to="/forms/new"
+                        className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${isActive('/forms/new')
+                            ? 'bg-indigo-50 text-indigo-700 shadow-sm'
+                            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                    >
+                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+                        Crear Formulario
+                    </Link>
+                </nav>
+
+                {/* User Profile / Logout (Bottom) */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 bg-white border-t border-gray-50">
+                    <div className="flex items-center mb-6">
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-sm">
+                            {user?.name?.charAt(0) || 'U'}
                         </div>
-                        <div className="flex items-center space-x-4">
-                            <div className="text-sm text-gray-700">
-                                    Bienvenido, {user?.name || 'Usuario'}
-                            </div>
-                            <button
-                                onClick={handleLogout}
-                                className="text-sm text-gray-500 hover:text-red-600 transition-colors"
-                            >
-                                    Cerrar sesión
-                            </button>
+                        <div className="ml-3">
+                            <p className="text-sm font-semibold text-gray-900 truncate w-32">{user?.name || 'User'}</p>
+                            <p className="text-xs text-gray-400 truncate w-32">Admin</p>
                         </div>
                     </div>
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center justify-center px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
+                    >
+                        <svg className="w-4 h-4 mr-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                        Sign Out
+                    </button>
                 </div>
-            </nav>
+            </aside>
 
-            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <Outlet />
+            {/* Mobile Header */}
+            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 z-40 shadow-sm">
+                <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">Koru Forms</span>
+                <button
+                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                    className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                </button>
+            </div>
+
+            {/* Main Content */}
+            <main className="flex-1 flex flex-col overflow-hidden relative">
+                {/* Overlay for mobile sidebar */}
+                {sidebarOpen && (
+                    <div
+                        className="fixed inset-0 bg-black/20 z-40 lg:hidden backdrop-blur-sm"
+                        onClick={() => setSidebarOpen(false)}
+                    ></div>
+                )}
+
+                <div className="flex-1 overflow-y-auto bg-gray-50 p-6 lg:p-10 scroll-smooth mt-16 lg:mt-0">
+                    <Outlet />
+                </div>
             </main>
         </div>
     );
 };
-
 export default Layout;

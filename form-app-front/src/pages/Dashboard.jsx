@@ -30,22 +30,28 @@ const Dashboard = () => {
     const handleDelete = async (id) => {
         const result = await Swal.fire({
             title: '¿Estás seguro?',
-            text: "No podrás revertir esto",
+            text: "El formulario se moverá a la papelera. Podrás seguir viendo sus envíos.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#e5e7eb',
             confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'px-4 py-2 rounded-lg font-medium',
+                cancelButton: 'px-4 py-2 rounded-lg font-medium text-gray-700'
+            }
         });
 
         if (result.isConfirmed) {
             await deleteForm(id);
-            Swal.fire(
-                '¡Eliminado!',
-                'El formulario ha sido eliminado.',
-                'success'
-            );
+            Swal.fire({
+                title: '¡Eliminado!',
+                text: 'El formulario ha sido eliminado.',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
         }
     };
 
@@ -67,18 +73,22 @@ const Dashboard = () => {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Mis formularios</h1>
+            <div className="flex justify-between items-center mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Mis formularios</h1>
+                    <p className="text-gray-500 mt-1">Gestiona tus puntos de contacto</p>
+                </div>
                 <Link
                     to="/forms/new"
-                    className="px-4 py-2 bg-primary text-white rounded-lg shadow hover:opacity-90 transition-colors"
+                    className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transform transition hover:-translate-y-0.5"
                 >
-                    Crear formulario
+                    + Nuevo formulario
                 </Link>
             </div>
 
             {error && (
-                <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+                <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-700 rounded-xl flex items-center">
+                    <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     {error}
                 </div>
             )}
@@ -88,85 +98,105 @@ const Dashboard = () => {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
                 </div>
             ) : (
-                <div className="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-200">
+                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                     {forms.length > 0 ? (
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <table className="min-w-full divide-y divide-gray-100">
+                            <thead className="bg-white">
                                 <tr>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Título
+                                    <th scope="col" className="px-8 py-6 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                        Form Title
                                     </th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ID del formulario
+                                    <th scope="col" className="px-6 py-6 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                        Form ID
                                     </th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Estado
+                                    <th scope="col" className="px-6 py-6 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                        Status
                                     </th>
-                                    <th scope="col" className="relative px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Acciones
+                                    <th scope="col" className="relative px-8 py-6 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                        Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="bg-white divide-y divide-gray-100">
                                 {forms.map((form) => {
-                                    // isActive es el flag maestro del Cron (Website válido)
-                                    // status: 'active' es la activación manual
+                                    // isDeleted visual handling
+                                    const isDeleted = form.isDeleted === true;
                                     const isGlobalActive = form.isActive !== false;
                                     const isFormActive = form.status === 'active';
                                     const currentId = form.id || form._id;
-                                    const targetWebsiteId = form.website_id || user?.websites?.[0] || koruContext.website.id;
+
+                                    // Row styling for deleted
+                                    const rowClass = isDeleted ? 'bg-gray-50/50 opacity-75' : 'hover:bg-gray-50 transition-colors';
 
                                     return (
-                                        <tr key={currentId} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-gray-900">{form.title}</div>
+                                        <tr key={currentId} className={rowClass}>
+                                            <td className="px-8 py-5 whitespace-nowrap">
+                                                <div className="text-sm font-semibold text-gray-900">{form.title}</div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-500">{form.formId}</div>
+                                            <td className="px-6 py-5 whitespace-nowrap">
+                                                <div className="text-sm text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded w-fit">{form.formId}</div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="flex flex-col">
-                                                    {!isGlobalActive ? (
-                                                        <span className="px-2 py-1 flex items-center w-fit text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                                            <span className="w-2 h-2 rounded-full mr-1.5 bg-red-500"></span>
-                                                            Sitio Inactivo
+                                            <td className="px-6 py-5 whitespace-nowrap">
+                                                <div className="flex flex-col items-start">
+                                                    {isDeleted ? (
+                                                        <span className="px-2.5 py-1 flex items-center w-fit text-xs font-semibold rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                                                            <span className="w-1.5 h-1.5 rounded-full mr-2 bg-gray-400"></span>
+                                                            Eliminado
                                                         </span>
                                                     ) : (
-                                                        <span className="px-2 py-1 flex items-center w-fit text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                            <span className="w-2 h-2 rounded-full mr-1.5 bg-green-500"></span>
-                                                            Activo
-                                                        </span>
-                                                    )}
-
-                                                    {!isGlobalActive && (
-                                                        <span className="text-[10px] text-red-400 mt-1 italic">Sitio Inactivo en Koru Suite</span>
+                                                        // This handles the 'isDeleted' true case if needed, but the structure was:
+                                                        // isDeleted ? (deleted_span) : ( !isActive ? (inactive_span) : (active_span) )
+                                                        // The previous replace removed the ") :" part. 
+                                                        // I need to reconstruct the logic properly.
+                                                        !isGlobalActive ? (
+                                                            <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-50 text-red-600 border border-red-100">
+                                                                Inactive
+                                                            </span>
+                                                        ) : (
+                                                            <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-50 text-green-600 border border-green-100">
+                                                                Active
+                                                            </span>
+                                                        )
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                                                {isGlobalActive ? (
-                                                    <button
-                                                        onClick={() => handleOpenEmbed(form)}
-                                                        disabled={isValidating}
-                                                        className="text-indigo-600 hover:text-indigo-900 font-semibold disabled:opacity-50"
-                                                    >
-                                                        {isValidating ? 'Validando...' : 'Código Embebido'}
-                                                    </button>
-                                                ) : (
-                                                    <span className="text-gray-400 cursor-not-allowed italic text-xs">Aviso: Sitio Inactivo en Koru Suite</span>
-                                                )}
-                                                <Link to={`/forms/${currentId}`} className="text-primary hover:underline">
-                                                    Editar
-                                                </Link>
-                                                <Link to={`/forms/${currentId}/submissions`} className="text-gray-600 hover:text-gray-900 font-medium">
-                                                    Ver Envíos
-                                                </Link>
-                                                <button
-                                                    onClick={() => handleDelete(currentId)}
-                                                    className="text-red-400 hover:text-red-600"
-                                                >
-                                                    Eliminar
-                                                </button>
+                                            <td className="px-8 py-5 whitespace-nowrap text-right text-sm font-medium">
+                                                <div className="flex items-center justify-end space-x-4">
+                                                    {/* Embed Code */}
+                                                    {!isDeleted && isGlobalActive ? (
+                                                        <button
+                                                            onClick={() => handleOpenEmbed(form)}
+                                                            disabled={isValidating}
+                                                            className="text-indigo-600 hover:text-indigo-900 font-semibold disabled:opacity-50 transition-colors"
+                                                            title="Obtener código"
+                                                        >
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                                                        </button>
+                                                    ) : null}
+
+                                                    {/* Edit */}
+                                                    {!isDeleted && (
+                                                        <Link to={`/forms/${currentId}`} className="text-gray-400 hover:text-indigo-600 transition-colors" title="Editar">
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                                        </Link>
+                                                    )}
+
+                                                    {/* Submissions (Always Visible) */}
+                                                    <Link to={`/forms/${currentId}/submissions`} className="text-gray-400 hover:text-indigo-600 transition-colors" title="Ver Envíos">
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                                    </Link>
+
+                                                    {/* Delete */}
+                                                    {!isDeleted && (
+                                                        <button
+                                                            onClick={() => handleDelete(currentId)}
+                                                            className="text-gray-400 hover:text-red-500 transition-colors"
+                                                            title="Eliminar"
+                                                        >
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     )
@@ -174,9 +204,15 @@ const Dashboard = () => {
                             </tbody>
                         </table>
                     ) : (
-                        <div className="text-center py-12">
-                            <p className="text-gray-500 text-lg">No se encontraron formularios.</p>
-                            <p className="text-gray-400">Comienza creando uno nuevo.</p>
+                        <div className="text-center py-20 bg-gray-50/50">
+                            <div className="w-16 h-16 bg-indigo-50 text-indigo-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            </div>
+                            <p className="text-gray-900 font-medium text-lg">No se encontraron formularios</p>
+                            <p className="text-gray-500 mt-1">Comienza creando tu primer formulario de contacto</p>
+                            <Link to="/forms/new" className="mt-6 inline-block px-6 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors">
+                                Crear ahora
+                            </Link>
                         </div>
                     )}
                 </div>

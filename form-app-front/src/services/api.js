@@ -30,7 +30,8 @@ api.interceptors.response.use(
         if (error.response && error.response.status === 401) {
             // Token expired or invalid
             Cookies.remove('token');
-            if (window.location.pathname !== '/login') {
+            // Prevent infinite loop if already on login
+            if (!window.location.pathname.includes('/login')) {
                 window.location.href = '/login';
             }
         }
