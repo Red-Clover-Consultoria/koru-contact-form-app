@@ -1,4 +1,5 @@
-import { Controller, Post, Body, UsePipes, ValidationPipe, HttpStatus, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, UsePipes, ValidationPipe, HttpStatus, BadRequestException, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { SubmissionsService } from './submissions.service';
 import { SubmitFormDto } from './dto/submit-form.dto';
 
@@ -34,5 +35,10 @@ export class SubmissionsController {
             // Otros errores (ej. 404 Formulario no encontrado, 500 error del mailer)
             throw error;
         }
+    }
+    @UseGuards(JwtAuthGuard)
+    @Get(':formId/submissions')
+    async getSubmissions(@Param('formId') formId: string) {
+        return this.submissionsService.findAllByFormId(formId);
     }
 }

@@ -4,6 +4,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import FormBuilder from './pages/FormBuilder';
+import Submissions from './pages/Submissions';
 import WidgetPreview from './pages/WidgetPreview';
 import Layout from './layouts/Layout';
 import RequireAuth from './components/RequireAuth';
@@ -22,6 +23,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/forms/new" element={<FormBuilder />} />
             <Route path="/forms/:id" element={<FormBuilder />} />
+            <Route path="/forms/:id/submissions" element={<Submissions />} /> {/* Added this route */}
           </Route>
         </Route>
 

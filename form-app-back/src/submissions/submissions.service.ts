@@ -103,4 +103,8 @@ export class SubmissionsService {
 
         return savedSubmission;
     }
+
+    async findAllByFormId(formId: string): Promise<SubmissionDocument[]> {
+        return this.submissionModel.find({ form_id: formId }).sort({ createdAt: -1 }).exec();
+    }
 }

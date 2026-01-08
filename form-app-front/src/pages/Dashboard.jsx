@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import useFormStore from '../stores/useFormStore';
 import useAuthStore from '../stores/useAuthStore';
 import EmbedCodeModal from '../components/EmbedCodeModal';
+import Swal from 'sweetalert2';
 
 const Dashboard = () => {
     const { forms, fetchForms, deleteForm, isLoading, error } = useFormStore();
@@ -27,8 +28,24 @@ const Dashboard = () => {
     }, [fetchForms]);
 
     const handleDelete = async (id) => {
-        if (window.confirm('¿Seguro que quieres eliminar este formulario?')) {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "No podrás revertir esto",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
             await deleteForm(id);
+            Swal.fire(
+                '¡Eliminado!',
+                'El formulario ha sido eliminado.',
+                'success'
+            );
         }
     };
 
@@ -44,7 +61,7 @@ const Dashboard = () => {
             setSelectedForm({ ...form, website_id: targetWebsiteId });
             setIsModalOpen(true);
         } else {
-            alert('No tienes permisos suficientes en Koru Suite para este formulario o sitio.');
+            Swal.fire('Acceso denegado', 'No tienes permisos suficientes en Koru Suite para este formulario o sitio.', 'error');
         }
     };
 
@@ -140,6 +157,9 @@ const Dashboard = () => {
                                                 )}
                                                 <Link to={`/forms/${currentId}`} className="text-primary hover:underline">
                                                     Editar
+                                                </Link>
+                                                <Link to={`/forms/${currentId}/submissions`} className="text-gray-600 hover:text-gray-900 font-medium">
+                                                    Ver Envíos
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(currentId)}

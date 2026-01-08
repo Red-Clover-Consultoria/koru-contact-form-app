@@ -1,19 +1,45 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
 import useFormStore from '../../stores/useFormStore';
+import Swal from 'sweetalert2';
 
-const FormWidget = ({ formId, websiteId, token, isPreview = false }) => {
+const FormWidget = ({ formId, websiteId, token, isPreview = false, config: directConfig }) => {
     const { fetchConfig } = useFormStore();
-    const [config, setConfig] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [config, setConfig] = useState(directConfig || null);
+    const [isLoading, setIsLoading] = useState(!directConfig);
     const [isOpen, setIsOpen] = useState(false); // For popup/floating
     const [formData, setFormData] = useState({});
     const [errors, setErrors] = useState({});
     const [status, setStatus] = useState('idle'); // idle, submitting, success, error
     const [activeToken, setActiveToken] = useState(token); // Local state for the token
 
+    // Sync directConfig when it changes (for Builder Preview)
+    useEffect(() => {
+        if (directConfig) {
+            setConfig(directConfig);
+            setIsLoading(false);
+
+            // Initialize form data if needed (optional re-init)
+            const initialData = {};
+            if (directConfig.fields_config) {
+                directConfig.fields_config.forEach(field => {
+                    initialData[field.id] = '';
+                });
+            }
+            setFormData(prev => ({ ...initialData, ...prev })); // Merge to keep existing input if possible
+
+            // Auto-open logic for Builder if needed? 
+            // Maybe better to NOT auto-open in builder every time config changes to avoid annoyance.
+            // But if display_type changes to inline, we must show it.
+            if (directConfig.layout_settings?.display_type === 'Inline') {
+                setIsOpen(true);
+            }
+        }
+    }, [directConfig]);
+
     useEffect(() => {
         const load = async () => {
+            if (directConfig) return; // Skip fetch if config is provided
             if (!formId) return;
             try {
                 const result = await fetchConfig(formId, token);
@@ -30,7 +56,9 @@ const FormWidget = ({ formId, websiteId, token, isPreview = false }) => {
                 setFormData(initialData);
 
                 // Auto-open if inline
-                if (fetchedConfig.layout_settings?.display_type === 'inline') {
+                // Note: Backend enum might be lowercase or capitalized. Let's handle both.
+                const type = fetchedConfig.layout_settings?.display_type?.toLowerCase();
+                if (type === 'inline') {
                     setIsOpen(true);
                 }
             } catch (error) {
@@ -43,10 +71,12 @@ const FormWidget = ({ formId, websiteId, token, isPreview = false }) => {
         };
 
         load();
-    }, [formId, token, fetchConfig]);
+    }, [formId, token, fetchConfig, directConfig]);
 
     const validate = () => {
         const newErrors = {};
+        if (!config?.fields_config) return false;
+
         config.fields_config.forEach(field => {
             if (field.required && !formData[field.id]) {
                 newErrors[field.id] = 'Este campo es obligatorio';
@@ -65,6 +95,17 @@ const FormWidget = ({ formId, websiteId, token, isPreview = false }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validate()) return;
+
+        // Prevent submission in preview mode
+        if (isPreview) {
+            Swal.fire({
+                title: 'Modo Vista Previa',
+                text: 'Esta es una vista previa. El formulario no enviará datos reales.',
+                icon: 'info',
+                confirmButtonColor: config.layout_settings.accent_color || '#4F46E5'
+            });
+            return;
+        }
 
         setStatus('submitting');
         try {
@@ -110,11 +151,16 @@ const FormWidget = ({ formId, websiteId, token, isPreview = false }) => {
     if (!config) return <div>Formulario no encontrado</div>;
 
     const { layout_settings, fields_config } = config;
-    const { display_type, position, accent_color, submit_text, success_msg } = layout_settings;
+    // Backend Enum might be Capitalized (Inline, Floating, etc) or lowercase. Normalize for check.
+    const displayTypeRaw = layout_settings.display_type || 'Inline';
+    const display_type = displayTypeRaw.toLowerCase();
+
+    const { position, accent_color, submit_text, success_msg } = layout_settings;
 
     // Helper to get position classes
     const getPositionClass = () => {
-        switch (position) {
+        const pos = position?.toLowerCase() || 'bottom-right';
+        switch (pos) {
             case 'bottom-right': return 'bottom-4 right-4';
             case 'bottom-left': return 'bottom-4 left-4';
             case 'top-right': return 'top-4 right-4';
@@ -128,12 +174,12 @@ const FormWidget = ({ formId, websiteId, token, isPreview = false }) => {
         return (
             <button
                 onClick={() => setIsOpen(true)}
-                className={`fixed ${getPositionClass()} z-50 p-4 rounded-full shadow-lg text-white transition hover:scale-105`}
-                style={{ backgroundColor: accent_color }}
+                className={`fixed ${getPositionClass()} z-50 rounded-full shadow-lg text-white transition hover:scale-105 flex items-center justify-center`}
+                style={{ backgroundColor: accent_color, width: '60px', height: '60px' }}
             >
                 {/* Icon placeholder (bubble) */}
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                 </svg>
             </button>
         );

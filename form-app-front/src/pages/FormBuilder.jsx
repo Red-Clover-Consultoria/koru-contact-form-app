@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useFormStore from '../stores/useFormStore';
 import useAuthStore from '../stores/useAuthStore';
+import Swal from 'sweetalert2';
 
 // Sections (Placeholders for now)
 import SectionFields from '../components/builder/SectionFields';
 import SectionLayout from '../components/builder/SectionLayout';
 import SectionEmail from '../components/builder/SectionEmail';
+import FormWidget from '../components/widget/FormWidget';
 
 const FormBuilder = () => {
     const { id } = useParams();
@@ -74,7 +76,7 @@ const FormBuilder = () => {
                 // Sincronización de WebsiteID: tomarlo de la sesión
                 const websiteId = websites?.[0];
                 if (!websiteId) {
-                    alert('No se pudo determinar el sitio web autorizado. Por favor re-inicia sesión.');
+                    Swal.fire('Error', 'No se pudo determinar el sitio web autorizado. Por favor re-inicia sesión.', 'error');
                     return;
                 }
                 await createForm({ ...formData, websiteId });
@@ -88,7 +90,7 @@ const FormBuilder = () => {
                 ? backendMessage.join(', ') // Errores de ValidationPipe suelen venir en array
                 : backendMessage || error.message || 'Error al guardar el formulario';
 
-            alert(`Error: ${message}`);
+            Swal.fire('Error', `No se pudo guardar: ${message}`, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -121,7 +123,7 @@ const FormBuilder = () => {
             {/* Tabs & Main Content */}
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar / Tabs */}
-                <div className="w-64 bg-gray-50 border-r border-gray-200 p-4">
+                <div className="w-64 bg-gray-50 border-r border-gray-200 p-4 hidden md:block overflow-y-auto">
                     {/* General Info Inputs in Sidebar */}
                     <div className="mb-6 space-y-4">
                         <div>
@@ -176,8 +178,14 @@ const FormBuilder = () => {
                     </nav>
                 </div>
 
-                {/* Content Area */}
-                <div className="flex-1 p-8 overflow-y-auto">
+                {/* Editor Content Area */}
+                <div className="flex-1 p-8 overflow-y-auto border-r border-gray-200 bg-white">
+                    <h2 className="text-xl font-bold mb-6 text-gray-800">
+                        {activeTab === 'fields' && 'Editor de Campos'}
+                        {activeTab === 'layout' && 'Diseño del Widget'}
+                        {activeTab === 'email' && 'Configuración de Email'}
+                    </h2>
+
                     {activeTab === 'fields' && (
                         <SectionFields
                             fields={formData.fields_config}
@@ -196,6 +204,36 @@ const FormBuilder = () => {
                             onChange={newSettings => setFormData({ ...formData, email_settings: newSettings })}
                         />
                     )}
+                </div>
+
+                {/* Live Preview Area */}
+                <div className="w-[400px] bg-gray-100 flex flex-col hidden lg:flex relative">
+                    <div className="p-4 bg-gray-200 border-b border-gray-300 text-center text-gray-600 font-medium text-sm">
+                        Vista Previa en Vivo
+                    </div>
+                    {/* Simulator Container */}
+                    <div className="flex-1 relative overflow-hidden flex items-center justify-center p-4">
+                        {/* Wrapper to simulate the page corner for floating widgets */}
+                        <div className="absolute inset-0 z-0 opacity-10 pointer-events-none"
+                            style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
+                        </div>
+
+                        {/* IMPORTANT: This container acts as the 'body' for fixed positioning simulation if we were using absolute. 
+                           However, FormWidget uses 'fixed'. 
+                           To simulate 'fixed' inside this div, we can use a transform scale or just let it float.
+                           Since 'fixed' is relative to viewport, a true simulation needs an iframe or `transform: translateZ(0)` to limit scope?
+                           Actually, 'fixed' inside a transformed element behaves like absolute. Let's try to contain it. 
+                        */}
+                        <div className="relative w-full h-full transform translate-0"> {/* This enforces fixed context */}
+                            <FormWidget
+                                formId={formData.formId}
+                                websiteId={user?.websites?.[0]}
+                                token={null}
+                                config={formData} // Direct injection
+                                isPreview={true}
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
