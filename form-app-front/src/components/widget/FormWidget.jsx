@@ -111,6 +111,7 @@ const FormWidget = ({ formId, websiteId, token, isPreview = false, config: direc
     if (!config) return <div>Formulario no encontrado</div>;
 
     const { layout_settings, fields_config } = config;
+    const { submit_text, success_msg } = layout_settings;
     const accentColor = layout_settings.accent_color || '#4F46E5';
     const displayTypeRaw = layout_settings.display_type || 'Inline';
     const display_type = displayTypeRaw.toLowerCase();

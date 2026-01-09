@@ -23,7 +23,8 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/forms/new" element={<FormBuilder />} />
             <Route path="/forms/:id" element={<FormBuilder />} />
-            <Route path="/forms/:id/submissions" element={<Submissions />} /> {/* Added this route */}
+            <Route path="/forms/submissions" element={<Submissions />} />
+            <Route path="/forms/:id/submissions" element={<Submissions />} />
           </Route>
         </Route>
 

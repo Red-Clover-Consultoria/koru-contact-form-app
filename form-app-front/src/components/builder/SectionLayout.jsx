@@ -18,10 +18,9 @@ const SectionLayout = ({ settings, onChange }) => {
                         onChange={handleChange}
                         className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border"
                     >
-                        {/* Deben coincidir con el enum del backend: 'Inline', 'Floating', 'Popup' */}
+                        {/* Deben coincidir con el enum del backend */}
                         <option value="Inline">En línea (Insertar)</option>
                         <option value="Floating">Botón flotante</option>
-                        <option value="Popup">Popup / Widget</option>
                     </select>
                 </div>
 
@@ -34,7 +33,7 @@ const SectionLayout = ({ settings, onChange }) => {
                         disabled={settings.display_type === 'Inline'}
                         className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border disabled:bg-gray-100 disabled:text-gray-400"
                     >
-                        {/* Deben coincidir con el enum del backend: 'Bottom-Right', 'Bottom-Left' */}
+                        {/* Deben coincidir con el enum del backend */}
                         <option value="Bottom-Right">Inferior derecha</option>
                         <option value="Bottom-Left">Inferior izquierda</option>
                     </select>

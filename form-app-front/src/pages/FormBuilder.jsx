@@ -40,7 +40,7 @@ const FormBuilder = () => {
         },
         email_settings: {
             admin_email: '',
-            subject_line: 'New Contact: {{Name}}',
+            subject_line: 'Recibiste una nueva solicitud',
             autoresponder: false,
         },
     });
@@ -84,10 +84,10 @@ const FormBuilder = () => {
             navigate('/dashboard');
         } catch (error) {
             console.error(error);
-            // Mostrar mensaje específico del backend si existe (ej. error de validación DTO o Koru API)
+            // Mostrar mensaje específico del backend
             const backendMessage = error.response?.data?.message;
             const message = Array.isArray(backendMessage)
-                ? backendMessage.join(', ') // Errores de ValidationPipe suelen venir en array
+                ? backendMessage.join(', ')
                 : backendMessage || error.message || 'Error al guardar el formulario';
 
             Swal.fire('Error', `No se pudo guardar: ${message}`, 'error');
@@ -99,7 +99,7 @@ const FormBuilder = () => {
     return (
         <div className="bg-gray-50 min-h-screen flex flex-col">
             {/* Header */}
-            <div className="px-8 py-4 bg-white border-b border-gray-200 flex justify-between items-center sticky top-0 z-20 shadow-sm">
+            <div className="px-8 py-4 bg-white border-b border-gray-200 flex justify-between items-center top-0 z-20 shadow-sm">
                 <div className="flex items-center space-x-4">
                     <button onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-gray-600">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -143,7 +143,7 @@ const FormBuilder = () => {
                 </button>
 
                 {/* Configuration Sidebar / Editor Area */}
-                <div className="w-full lg:w-80 bg-white border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col z-10 h-[60vh] lg:h-full lg:flex-none order-2 lg:order-1">
+                <div className="w-full lg:w-[40%] bg-white border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col z-10 h-[60vh] lg:h-full lg:flex-none order-2 lg:order-1">
                     {/* Tabs Header */}
                     <div className="flex border-b border-gray-100 shrink-0">
                         <button
@@ -218,11 +218,6 @@ const FormBuilder = () => {
 
                 {/* Live Preview Area */}
                 <div id="mobile-preview-area" className="flex-1 bg-gray-100/50 relative flex items-center justify-center overflow-hidden lg:overflow-visible min-h-[500px] lg:min-h-0 order-1 lg:order-2">
-                    <div className="absolute top-6 left-0 right-0 text-center z-0 pointer-events-none">
-                        <span className="bg-white/80 backdrop-blur px-4 py-1.5 rounded-full text-xs font-semibold text-gray-500 shadow-sm border border-gray-200 uppercase tracking-widest">
-                            Vista Previa en Tiempo Real
-                        </span>
-                    </div>
 
                     {/* Background Pattern */}
                     <div className="absolute inset-0 z-0 opacity-[0.04] pointer-events-none"
@@ -233,18 +228,13 @@ const FormBuilder = () => {
                     <div className="relative z-10 w-full max-w-md mx-6 animate-in fade-in zoom-in duration-300">
                         {/* Browser Window / Card Header */}
                         <div className="bg-white rounded-t-xl shadow-lg border-b border-gray-100 p-4 flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                                <div className="w-3 h-3 rounded-full bg-red-400/80"></div>
-                                <div className="w-3 h-3 rounded-full bg-yellow-400/80"></div>
-                                <div className="w-3 h-3 rounded-full bg-green-400/80"></div>
-                            </div>
                             <div className="text-xs font-medium text-gray-400">Preview</div>
                             <div className="w-12"></div> {/* Spacer for center alignment */}
                         </div>
 
                         {/* Form Content */}
-                        <div className="bg-white rounded-b-xl shadow-xl p-6 min-h-[400px] border border-gray-100">
-                            <h4 className="text-xl font-bold text-gray-800 mb-6">{formData.title || 'Formulario de Contacto'}</h4>
+                        <div className="bg-white rounded-b-xl shadow-xl p-6 min-h-[450px] border border-gray-100">
+
 
                             <div className="koru-form-preview-wrapper opacity-95"> {/* Slight opacity to blend if needed, or stick to 100 */}
                                 <FormWidget

@@ -138,20 +138,20 @@ const Dashboard = () => {
                             <thead className="bg-white">
                                 <tr>
                                     <th scope="col" className="px-6 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        Título del Form
+                                        Título
                                     </th>
                                     <th scope="col" className="hidden md:table-cell px-6 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        ID Único
+                                        ID
                                     </th>
                                     <th scope="col" className="hidden md:table-cell px-6 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        Estado de Salud
+                                        Estado
                                     </th>
                                     <th scope="col" className="hidden md:table-cell px-6 py-5 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">
                                         Websites
                                     </th>
-                                    <th scope="col" className="px-6 py-5 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                    {/* <th scope="col" className="px-6 py-5 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">
                                         Envíos
-                                    </th>
+                                    </th> */}
                                     <th scope="col" className="relative px-6 py-5 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
                                         Acciones
                                     </th>
@@ -165,8 +165,8 @@ const Dashboard = () => {
                                     const currentId = form.id || form._id;
 
                                     // Mock data for UI if missing
-                                    const submissionsCount = form.submissions_count !== undefined ? form.submissions_count : Math.floor(Math.random() * 50);
-                                    const websitesCount = form.website_id ? 1 : 0; // Simple logic for now
+                                    const submissionsCount = form.submissions_count !== undefined ? form.submissions_count : 0;
+                                    const website = form.website_id;
 
                                     // Row styling for deleted
                                     const rowClass = isDeleted ? 'bg-gray-50/50 opacity-75' : 'hover:bg-gray-50 transition-colors';
@@ -202,20 +202,13 @@ const Dashboard = () => {
                                                 </div>
                                             </td>
                                             <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                                                {websitesCount}
+                                                {website}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                            {/* <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
                                                 {submissionsCount}
-                                            </td>
+                                            </td> */}
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <div className="flex items-center justify-end space-x-3">
-                                                    {/* Edit */}
-                                                    {!isDeleted && (
-                                                        <Link to={`/forms/${currentId}`} className="text-gray-400 hover:text-[#00C896] transition-colors" title="Editar">
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                                        </Link>
-                                                    )}
-
                                                     {/* Embed Code */}
                                                     {!isDeleted && isGlobalActive ? (
                                                         <button
@@ -227,6 +220,13 @@ const Dashboard = () => {
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
                                                         </button>
                                                     ) : null}
+
+                                                    {/* Edit */}
+                                                    {!isDeleted && (
+                                                        <Link to={`/forms/${currentId}`} className="text-gray-400 hover:text-[#00C896] transition-colors" title="Editar">
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                                        </Link>
+                                                    )}
 
                                                     {/* Submissions (Always Visible) */}
                                                     <Link to={`/forms/${currentId}/submissions`} className="text-gray-400 hover:text-[#00C896] transition-colors" title="Ver Envíos">
