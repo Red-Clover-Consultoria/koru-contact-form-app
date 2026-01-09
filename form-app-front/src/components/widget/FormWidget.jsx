@@ -7,87 +7,78 @@ const FormWidget = ({ formId, websiteId, token, isPreview = false, config: direc
     const { fetchConfig } = useFormStore();
     const [config, setConfig] = useState(directConfig || null);
     const [isLoading, setIsLoading] = useState(!directConfig);
-    const [isOpen, setIsOpen] = useState(false); // For popup/floating
+    const [isOpen, setIsOpen] = useState(false);
     const [formData, setFormData] = useState({});
     const [errors, setErrors] = useState({});
-    const [status, setStatus] = useState('idle'); // idle, submitting, success, error
-    const [activeToken, setActiveToken] = useState(token); // Local state for the token
+    const [status, setStatus] = useState('idle');
+    const [activeToken, setActiveToken] = useState(token);
+    const [isPanelOpen, setIsPanelOpen] = useState(false); // Matches ContactForm logic
 
-    // Sync directConfig when it changes (for Builder Preview)
+    // Icon components (Lucide-like SVGs)
+    const Icons = {
+        MessageSquare: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>,
+        Mail: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>,
+        Phone: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>,
+        User: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>,
+        X: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>,
+        CheckCircle: () => <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><path d="M22 4 12 14.01l-3-3" /></svg>,
+        Send: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" x2="11" y1="2" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
+    };
+
+    const GetIcon = () => {
+        switch (config.layout_settings.bubble_icon?.toLowerCase()) {
+            case 'envelope': return <Icons.Mail />;
+            case 'phone': return <Icons.Phone />;
+            case 'user': return <Icons.User />;
+            default: return <Icons.MessageSquare />;
+        }
+    };
+
     useEffect(() => {
         if (directConfig) {
             setConfig(directConfig);
             setIsLoading(false);
-
-            // Initialize form data if needed (optional re-init)
             const initialData = {};
             if (directConfig.fields_config) {
-                directConfig.fields_config.forEach(field => {
-                    initialData[field.id] = '';
-                });
+                directConfig.fields_config.forEach(field => initialData[field.id] = '');
             }
-            setFormData(prev => ({ ...initialData, ...prev })); // Merge to keep existing input if possible
+            setFormData(prev => ({ ...initialData, ...prev }));
 
-            // Auto-open logic for Builder
-            // If Inline, it must be open. If Floating/Popup, start closed (bubble) to show the button.
-            if (directConfig.layout_settings?.display_type === 'Inline') {
-                setIsOpen(true);
-            } else {
-                setIsOpen(false);
-            }
+            // Sync isPanelOpen state with display type
+            const isInline = directConfig.layout_settings?.display_type === 'Inline';
+            setIsPanelOpen(isInline);
         }
     }, [directConfig]);
 
     useEffect(() => {
         const load = async () => {
-            if (directConfig) return; // Skip fetch if config is provided
-            if (!formId) return;
+            if (directConfig || !formId) return;
             try {
                 const result = await fetchConfig(formId, token);
-                const { config: fetchedConfig, token: fetchedToken } = result;
-
-                setConfig(fetchedConfig);
-                setActiveToken(fetchedToken);
-
-                // Initialize form data
+                setConfig(result.config);
+                setActiveToken(result.token);
+                // Initialize
                 const initialData = {};
-                fetchedConfig.fields_config.forEach(field => {
-                    initialData[field.id] = '';
-                });
+                result.config.fields_config.forEach(field => initialData[field.id] = '');
                 setFormData(initialData);
 
-                // Auto-open if inline
-                // Note: Backend enum might be lowercase or capitalized. Let's handle both.
-                const type = fetchedConfig.layout_settings?.display_type?.toLowerCase();
-                if (type === 'inline') {
-                    setIsOpen(true);
-                }
+                const isInline = result.config.layout_settings?.display_type?.toLowerCase() === 'inline';
+                setIsPanelOpen(isInline);
             } catch (error) {
-                console.error("Koru security error:", error.message || error);
+                console.error(error);
                 setStatus('error');
-                setErrors({ config: error.message || "Error al cargar la configuración" });
             } finally {
                 setIsLoading(false);
             }
         };
-
         load();
     }, [formId, token, fetchConfig, directConfig]);
 
     const validate = () => {
         const newErrors = {};
         if (!config?.fields_config) return false;
-
         config.fields_config.forEach(field => {
-            if (field.required && !formData[field.id]) {
-                newErrors[field.id] = 'Este campo es obligatorio';
-            }
-            if (field.type === 'email' && formData[field.id]) {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(formData[field.id])) {
-                    newErrors[field.id] = 'Dirección de correo inválida';
-                }
-            }
+            if (field.required && !formData[field.id]) newErrors[field.id] = 'Este campo es obligatorio';
         });
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -96,157 +87,255 @@ const FormWidget = ({ formId, websiteId, token, isPreview = false, config: direc
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validate()) return;
-
-        // Prevent submission in preview mode
         if (isPreview) {
-            Swal.fire({
-                title: 'Modo Vista Previa',
-                text: 'Esta es una vista previa. El formulario no enviará datos reales.',
-                icon: 'info',
-                confirmButtonColor: config.layout_settings.accent_color || '#4F46E5'
-            });
+            Swal.fire({ title: 'Modo Vista Previa', text: 'Simulación de envío exitosa.', icon: 'info', confirmButtonColor: config.layout_settings.accent_color });
             return;
         }
-
         setStatus('submitting');
         try {
-            const payload = {
-                formId: formId,
-                website_id: websiteId || window.location.hostname, // Prioritize prop, fallback to hostname
-                data: formData,
-                metadata: {
-                    _trap: '', // Honeypot inside metadata
-                }
-            };
-
-            console.log("Koru Widget: Intentando envío con token...", activeToken);
-
-            // Use activeToken (synced from either prop or config response)
-            const headers = activeToken ? { 'X-Koru-Token': activeToken } : {};
-            await api.post('/forms/submit', payload, { headers });
+            await api.post('/forms/submit', { formId, website_id: websiteId, data: formData }, { headers: { 'X-Koru-Token': activeToken } });
             setStatus('success');
-
-            // Handle success message or redirect
-            if (config.layout_settings.redirect_url) {
-                setTimeout(() => {
-                    window.location.href = config.layout_settings.redirect_url;
-                }, 2000);
-            }
+            if (config.layout_settings.redirect_url) setTimeout(() => window.location.href = config.layout_settings.redirect_url, 2000);
         } catch (error) {
-            console.error("Koru Widget Error:", error.response?.data || error.message);
             setStatus('error');
-            // If the error message is available, we could even show it to the user
-            setErrors({ submit: error.response?.data?.message || 'Error al enviar el formulario. Verifica tu configuración.' });
+            setErrors({ submit: 'Error al enviar.' });
         }
     };
 
     const handleChange = (e, fieldId) => {
         setFormData({ ...formData, [fieldId]: e.target.value });
-        // Clear error on change
-        if (errors[fieldId]) {
-            setErrors({ ...errors, [fieldId]: null });
-        }
+        if (errors[fieldId]) setErrors({ ...errors, [fieldId]: null });
     };
 
-    if (isLoading) return <div>Cargando formulario...</div>;
+    if (isLoading) return <div>Cargando...</div>;
     if (!config) return <div>Formulario no encontrado</div>;
 
     const { layout_settings, fields_config } = config;
-    // Backend Enum might be Capitalized (Inline, Floating, etc) or lowercase. Normalize for check.
+    const accentColor = layout_settings.accent_color || '#4F46E5';
     const displayTypeRaw = layout_settings.display_type || 'Inline';
     const display_type = displayTypeRaw.toLowerCase();
+    const isFloating = display_type !== 'inline';
+    const position = layout_settings.position || 'Bottom-Right';
 
-    const { position, accent_color, submit_text, success_msg } = layout_settings;
+    // --- Dynamic Styles Mirroring ContactForm.tsx ---
+    const getStyles = () => {
+        // Adapt relative/fixed/absolute for preview environment
+        const containerPosition = isPreview
+            ? (isFloating ? 'absolute' : 'relative')
+            : (isFloating ? 'fixed' : 'relative');
 
-    // Helper to get position classes
-    const getPositionClass = () => {
-        const pos = position?.toLowerCase() || 'bottom-right';
-        switch (pos) {
-            case 'bottom-right': return 'bottom-4 right-4';
-            case 'bottom-left': return 'bottom-4 left-4';
-            case 'top-right': return 'top-4 right-4';
-            case 'top-left': return 'top-4 left-4';
-            default: return 'bottom-4 right-4';
+        const container = isFloating
+            ? {
+                position: containerPosition,
+                zIndex: 50, // Lower z-index for preview context handled by parent
+                bottom: '0',
+                right: '0',
+                left: '0',
+                top: '0',
+                pointerEvents: 'none',
+                width: '100%',
+                height: '100%' // Ensure it fills the preview area
+            }
+            : {
+                position: 'relative',
+                zIndex: 1,
+                width: '100%',
+                maxWidth: '500px',
+                margin: '0 auto',
+                fontFamily: "'Inter', system-ui, sans-serif"
+            };
+
+        const bubblePosition = {
+            position: 'absolute',
+            pointerEvents: 'auto',
+            bottom: position.includes('Bottom') ? '20px' : 'auto',
+            top: position.includes('Top') ? '20px' : 'auto',
+            right: position.includes('Right') ? '20px' : 'auto',
+            left: position.includes('Left') ? '20px' : 'auto',
+        };
+
+        const bubble = {
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            backgroundColor: accentColor,
+            color: '#fff',
+            display: isFloating && !isPanelOpen ? 'flex' : 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.16)',
+            transition: 'transform 0.2s',
+            ...bubblePosition
+        };
+
+        const overlay = {
+            position: 'absolute', // Absolute to fill container (preview box or viewport)
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.25)',
+            backdropFilter: 'blur(5px)',
+            WebkitBackdropFilter: 'blur(5px)',
+            zIndex: 50,
+            opacity: isPanelOpen && isFloating ? 1 : 0,
+            pointerEvents: isPanelOpen && isFloating ? 'auto' : 'none',
+            transition: 'opacity 0.3s ease',
+        };
+
+        const panel = isFloating
+            ? {
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '90%',
+                maxWidth: '480px',
+                backgroundColor: '#fff',
+                borderRadius: '16px',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                display: isPanelOpen ? 'flex' : 'none',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                pointerEvents: 'auto',
+                zIndex: 55,
+                maxHeight: '85vh',
+                animation: 'koru-scale-in 0.2s ease-out',
+                fontFamily: "'Inter', system-ui, sans-serif"
+            }
+            : {
+                width: '100%',
+                backgroundColor: '#fff',
+                borderRadius: '12px',
+                border: '1px solid #f3f4f6',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                animation: 'koru-fade-in 0.3s ease-out',
+            };
+
+        return { container, bubble, overlay, panel };
+    };
+
+    const styles = getStyles();
+
+    const innerStyles = {
+        header: {
+            backgroundColor: '#fff',
+            padding: '20px 24px',
+            borderBottom: '1px solid #f3f4f6',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+        },
+        headerTitle: {
+            fontSize: '18px',
+            fontWeight: 700,
+            color: '#111827',
+            margin: 0,
+            letterSpacing: '-0.02em',
+        },
+        body: { padding: '24px', overflowY: 'auto' },
+        label: { display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#374151' },
+        required: { color: '#EF4444', marginLeft: '4px' },
+        input: {
+            width: '100%',
+            padding: '12px 14px',
+            borderRadius: '10px',
+            border: '1px solid #E5E7EB',
+            fontSize: '15px',
+            color: '#1F2937',
+            backgroundColor: '#F9FAFB',
+            transition: 'all 0.2s ease',
+            outline: 'none',
+            boxSizing: 'border-box'
+        },
+        button: {
+            width: '100%',
+            padding: '14px',
+            backgroundColor: accentColor,
+            color: '#fff',
+            border: 'none',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            transition: 'filter 0.2s',
         }
     };
 
-    // Render logic based on display_type
-    if (!isOpen && (display_type === 'popup' || display_type === 'floating')) {
+    if (status === 'success') {
         return (
-            <button
-                onClick={() => setIsOpen(true)}
-                className={`fixed ${getPositionClass()} z-50 rounded-full shadow-lg text-white transition hover:scale-105 flex items-center justify-center`}
-                style={{ backgroundColor: accent_color, width: '60px', height: '60px' }}
-            >
-                {/* Icon placeholder (bubble) */}
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                </svg>
-            </button>
+            <div style={styles.container}>
+                {isFloating && <div style={styles.overlay} onClick={() => setIsPanelOpen(false)}></div>}
+                <div style={styles.panel}>
+                    <div style={{ position: 'absolute', right: '16px', top: '16px', cursor: 'pointer' }} onClick={() => isFloating ? setIsPanelOpen(false) : null}>
+                        {isFloating && <Icons.X />}
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '48px 24px' }}>
+                        <div style={{ display: 'inline-flex', padding: '16px', borderRadius: '50%', backgroundColor: `${accentColor}15`, marginBottom: '16px' }}>
+                            <Icons.CheckCircle />
+                        </div>
+                        <h3 style={{ margin: '0 0 8px 0', fontSize: '20px', fontWeight: 700, color: '#111827' }}>¡Enviado!</h3>
+                        <p style={{ color: '#6B7280', margin: 0, fontSize: '15px', lineHeight: '1.5' }}>{success_msg || 'Gracias.'}</p>
+                    </div>
+                </div>
+            </div>
         );
     }
 
     return (
-        <div className={`
-            ${display_type === 'inline' ? 'w-full' : `fixed ${getPositionClass()} z-50 w-full max-w-sm`}
-             bg-white shadow-xl rounded-lg overflow-hidden border border-gray-100 flex flex-col font-sans mb-4 mr-4
-        `}>
-            {/* Header */}
-            <div className="px-6 py-4 flex justify-between items-center" style={{ backgroundColor: accent_color }}>
-                <h3 className="text-white font-semibold text-lg">{config.title}</h3>
-                {display_type !== 'inline' && (
-                    <button onClick={() => setIsOpen(false)} className="text-white hover:opacity-75">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                    </button>
-                )}
-            </div>
+        <div style={styles.container}>
+            <style>{`
+                @keyframes koru-scale-in { from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+                @keyframes koru-fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+                @keyframes koru-spin { to { transform: rotate(360deg); } }
+                .koru-field:focus { border-color: ${accentColor} !important; background-color: #fff !important; box-shadow: 0 0 0 3px ${accentColor}20 !important; }
+                .koru-btn:hover { filter: brightness(1.1); }
+                .koru-btn:active { transform: translateY(1px); }
+            `}</style>
 
-            {/* Body */}
-            <div className="p-6">
-                {status === 'success' ? (
-                    <div className="text-center py-8">
-                        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-                            <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">¡Éxito!</h3>
-                        <div className="mt-2 px-7 py-3">
-                            <p className="text-sm text-gray-500">
-                                {success_msg || 'Tu mensaje ha sido enviado.'}
-                            </p>
-                        </div>
-                        {display_type !== 'inline' && (
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="mt-4 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
-                            >
-                                Cerrar
-                            </button>
-                        )}
-                    </div>
-                ) : (
-                    <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Overlay */}
+            {isFloating && <div style={styles.overlay} onClick={() => setIsPanelOpen(false)} />}
+
+            {/* Bubble */}
+            {isFloating && <div style={styles.bubble} onClick={() => setIsPanelOpen(true)}><GetIcon /></div>}
+
+            {/* Panel */}
+            <div style={styles.panel}>
+                <div style={innerStyles.header}>
+                    <h4 style={innerStyles.headerTitle}>{config.title}</h4>
+                    {isFloating && <div style={{ cursor: 'pointer', color: '#9CA3AF' }} onClick={() => setIsPanelOpen(false)}><Icons.X /></div>}
+                </div>
+                <div style={innerStyles.body}>
+                    <form onSubmit={handleSubmit}>
                         {fields_config.map(field => (
-                            <div key={field.id} className={`${field.width === '50%' ? 'w-1/2 inline-block px-1' : 'w-full px-1'}`}>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    {field.label} {field.required && <span className="text-red-500">*</span>}
+                            <div key={field.id} style={{
+                                width: field.width === '50%' ? '50%' : '100%',
+                                display: 'inline-block',
+                                paddingRight: field.width === '50%' ? '12px' : '0',
+                                boxSizing: 'border-box',
+                                verticalAlign: 'top',
+                                marginBottom: '20px'
+                            }}>
+                                <label style={innerStyles.label}>
+                                    {field.label} {field.required && <span style={innerStyles.required}>*</span>}
                                 </label>
-
                                 {field.type === 'textarea' ? (
                                     <textarea
                                         value={formData[field.id] || ''}
                                         onChange={(e) => handleChange(e, field.id)}
-                                        className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 ${errors[field.id] ? 'border-red-500' : 'border-gray-300'}`}
-                                        rows={3}
+                                        className="koru-field"
+                                        style={{ ...innerStyles.input, minHeight: '100px', resize: 'vertical' }}
                                     />
                                 ) : field.type === 'select' ? (
                                     <select
                                         value={formData[field.id] || ''}
                                         onChange={(e) => handleChange(e, field.id)}
-                                        className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 ${errors[field.id] ? 'border-red-500' : 'border-gray-300'}`}
+                                        className="koru-field"
+                                        style={innerStyles.input}
                                     >
                                         <option value="">Selecciona...</option>
                                         {field.options && field.options.split(',').map(opt => (
@@ -258,28 +347,18 @@ const FormWidget = ({ formId, websiteId, token, isPreview = false, config: direc
                                         type={field.type}
                                         value={formData[field.id] || ''}
                                         onChange={(e) => handleChange(e, field.id)}
-                                        className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 ${errors[field.id] ? 'border-red-500' : 'border-gray-300'}`}
+                                        className="koru-field"
+                                        style={innerStyles.input}
                                     />
                                 )}
-                                {errors[field.id] && <p className="mt-1 text-xs text-red-500">{errors[field.id]}</p>}
                             </div>
                         ))}
-
-                        {/* Anti-spam trap */}
-                        <input type="text" name="_trap" className="hidden" />
-
-                        <div className="pt-2">
-                            <button
-                                type="submit"
-                                disabled={status === 'submitting'}
-                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
-                                style={{ backgroundColor: accent_color }}
-                            >
-                                {status === 'submitting' ? 'Enviando...' : (submit_text || 'Enviar')}
-                            </button>
-                        </div>
+                        <button type="submit" className="koru-btn" disabled={status === 'submitting'} style={{ ...innerStyles.button, opacity: status === 'submitting' ? 0.7 : 1 }}>
+                            {status === 'submitting' ? 'Enviando...' : (submit_text || 'Enviar')}
+                            <Icons.Send />
+                        </button>
                     </form>
-                )}
+                </div>
             </div>
         </div>
     );
